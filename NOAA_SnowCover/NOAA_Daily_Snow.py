@@ -35,7 +35,8 @@ class NOAA_Snow_Cover:
 		self.IceExtent_anom = ['IceExtent Anomaly']
 		
 	def masksload(self):
-	
+		'''Loads regionmask and pixel area mask
+		'''
 		filename = 'X:/SnowCover/Masks/Region_Mask.msk'
 		with open(filename, 'rb') as fr:
 			self.regionmask = np.fromfile(fr, dtype='uint8')
@@ -56,6 +57,8 @@ class NOAA_Snow_Cover:
 
 		
 	def load_days(self):
+		'''load binary data files and pass them to the calculation function
+		'''
 		self.stringday = str(self.day_of_year).zfill(3)
 		self.stringday2 = str(self.day_of_year-1).zfill(3)
 		filenameMean = 'X:/SnowCover/DataFiles/Mean/NOAA_Mean_{}_24km.bin'.format(self.stringday)
@@ -101,6 +104,7 @@ class NOAA_Snow_Cover:
 		
 
 	def calculateExtent(self,snowmap,regionmask,pixelarea,snowMean,snowy):
+		''' calculates the day-month for a 366 day year'''
 		iceextent = 0
 		NorthAmericaExtent = 0
 		GreenlandExtent = 0
@@ -127,6 +131,7 @@ class NOAA_Snow_Cover:
 		
 		
 	def createmap(self,snowmap,snowextent,iceextent):
+		'''displays snow cover data'''
 		snowmap = snowmap.reshape(610,450)
 		map1 = ma.masked_outside(snowmap,-0.5,2.5) # Land -> Water
 		map2 = ma.masked_outside(snowmap,2.5,4.5) # Ice -> Snow
@@ -161,6 +166,7 @@ class NOAA_Snow_Cover:
 #		plt.show()
 		
 	def create_anolamy_map(self,snowmap):
+		'''displays snow cover anomaly data'''
 		snowmap = ma.masked_greater(snowmap, 2)
 		snowmap = snowmap.reshape(610,450)
 		
@@ -206,13 +212,14 @@ class NOAA_Snow_Cover:
 
 			
 	def writetofile(self):
+		'''writes NRT data to a csv file'''
 		with open('X:/Upload/Snow_Cover_Data/NRT_extent_data_'+str(self.year)+'.csv', "w") as output:
 			writer = csv.writer(output, lineterminator='\n') #str(self.year)
 			for x in range(0,len(self.IceExtent)):
 				writer.writerow([self.CSVDatum[x],self.IceExtent[x],self.NorthAmericaExtent[x],self.GreenlandExtent[x],self.EuropeExtent[x],self.AsiaExtent[x]])
 
 	def loadCSVdata(self):
-		
+		'''loads NRT data'''
 		#NRT Data
 		Yearcolnames = ['Date', 'IceExtent', 'NorthAmericaExtent','GreenlandExtent','EuropeExtent','AsiaExtent']
 		Yeardata = pandas.read_csv('X:/Upload/Snow_Cover_Data/NRT_extent_data_'+str(self.year)+'.csv', names=Yearcolnames)

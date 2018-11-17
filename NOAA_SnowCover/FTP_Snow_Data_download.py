@@ -38,7 +38,7 @@ class Downloader:
 		ftp.quit()
 		
 	def daily_download(self):
-		
+		'''downloads latest date'''
 		ftp = FTP('sidads.colorado.edu')     # connect to host, default port
 		ftp.login()                     # user anonymous, passwd anonymous@
 		
@@ -58,6 +58,7 @@ class Downloader:
 
 			
 	def process_data(self, filenameformatted):
+		'''extracts file, calculates extent & creates map/graphs'''
 		print(filenameformatted)
 		File_Manager.dailyupdate(filenameformatted)
 		NOAA_Daily_Snow.action.automated(self.day,self.month,self.year,self.day_of_year)
