@@ -14,14 +14,14 @@ class NOAA_Snow_Cover:
 
 
 	def __init__  (self):
-		self.year = 2018
-		self.daycount = 1 #366 year,39 years
-		self.day_of_year = 50
+		self.year = 2019
+		self.daycount = 366 #366 year,39 years
+		self.day_of_year = 1
 		
 		self.threads = 16
 		
 		self.plottype = 'daily' # daily ,  mask
-#		self.dailyorcumu()
+		self.dailyorcumu()
 		self.masksload()
 		self.mode = 'Mean'
 		
@@ -57,8 +57,9 @@ class NOAA_Snow_Cover:
 
 	def viewloop(self):
 		for day_of_year in range (1,366): #366
-			filename = 'DataFiles/NOAA_{}{}_24km.bin'.format(self.year,str(day_of_year).zfill(3))
+#			filename = 'DataFiles/NOAA_{}{}_24km.bin'.format(self.year,str(day_of_year).zfill(3))
 #			filename = 'DataFiles/Mean/NOAA_Mean_{}_24km.bin'.format(str(day_of_year).zfill(3))
+			filename = 'DataFiles/Max/NOAA_Max_{}_24km.bin'.format(str(day_of_year).zfill(3))
 			with open(filename, 'rb') as fr:
 				snow = np.fromfile(fr, dtype='uint8')
 			self.dailyview(snow,day_of_year)
@@ -68,11 +69,12 @@ class NOAA_Snow_Cover:
 	def dayloop(self):
 		filename_list = []
 		filename_listmean = []
-		for self.year in range(1999,2018):
+		for self.year in range(1998,2005):
 			for day_of_year in range (1,366): #366
 				stringday = str(day_of_year).zfill(3)
 				filenameMean = 'DataFiles/Mean/NOAA_Mean_{}_24km.bin'.format(stringday)
-				filename = 'Datafiles/NOAA_{}{}_24km.bin'.format(self.year,stringday)
+				filename = 'DataFiles/Max/NOAA_Max_{}_24km.bin'.format(str(day_of_year).zfill(3))
+#				filename = 'Datafiles/NOAA_{}{}_24km.bin'.format(self.year,stringday)
 				filename_list.append(filename)
 				filename_listmean.append(filenameMean)
 				self.CSVDatum.append('{}_{}'.format(self.year,stringday))
@@ -179,7 +181,7 @@ class NOAA_Snow_Cover:
 #			self.title = self.fig.suptitle('Mask', fontsize=14, fontweight='bold')
 			
 	def writetofile(self):
-		with open('_NOAA_snow_Cover_multithread.csv', "w") as output: 
+		with open('_NOAA_snow_Cover_multithread2.csv', "w") as output: 
 			writer = csv.writer(output, lineterminator='\n') #str(self.year)
 			for x in range(0,len(self.IceExtent)):
 				writer.writerow([self.CSVDatum[x],self.IceExtent[x],self.NorthAmericaExtent[x],self.GreenlandExtent[x],self.EuropeExtent[x],self.AsiaExtent[x]])

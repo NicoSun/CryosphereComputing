@@ -47,7 +47,6 @@ class NOAA_Snow_Cover:
 		with open(filename, 'rb') as fr:
 			self.coastmask = np.fromfile(fr, dtype='uint8')
 		
-		
 		filename = 'X:/SnowCover/Masks/Latitude_Mask.msk'
 		with open(filename, 'rb') as fr:
 			self.Latitude_Mask = np.fromfile(fr, dtype='float32')
@@ -68,7 +67,7 @@ class NOAA_Snow_Cover:
 		self.CSVDatum.append('{}_{}'.format(self.year,self.stringday))
 			
 		with open(filenameMean, 'rb') as fr:
-				snowMean = np.fromfile(fr, dtype='uint8')
+			snowMean = np.fromfile(fr, dtype='uint8')
 		with open(filename, 'rb') as fr:
 			snow = np.fromfile(fr, dtype='uint8')
 		with open(filenameyesterday, 'rb') as fr:
@@ -162,6 +161,7 @@ class NOAA_Snow_Cover:
 		plt.tight_layout(pad=1)
 		fig.savefig('X:/Upload/Snow_Cover_Data/NOAA_Snowmap.png')
 		fig.savefig('X:/SnowCover/Images/NOAA_Snowmap_normal_{}.png'.format(str(self.day_of_year).zfill(3)))
+		plt.draw()
 		plt.pause(0.01)
 #		plt.show()
 		
@@ -169,42 +169,34 @@ class NOAA_Snow_Cover:
 		'''displays snow cover anomaly data'''
 		snowmap = ma.masked_greater(snowmap, 2)
 		snowmap = snowmap.reshape(610,450)
+		snowmap = snowmap*100
 		
-		fig, ax = plt.subplots(figsize=(8, 10))
+		fig_anom, ax = plt.subplots(figsize=(8, 10))
 		cmap_anom = plt.cm.RdBu
 		cmap_anom.set_bad('black',0.8)
 		ax.clear()
 		
 		ax.text(0.82, 0.98, 'Map: Nico Sun', fontsize=10,color='black',transform=ax.transAxes)
-		ax.text(0.65, 0.05, 'red: below climatology (-100%)', fontsize=10,color='darkred',transform=ax.transAxes)
-		ax.text(0.65, 0.03, 'white: at climatology (+0%)', fontsize=10,color='grey',transform=ax.transAxes)
-		ax.text(0.65, 0.01, 'blue: above climatology (+100%)', fontsize=10,color='darkblue',transform=ax.transAxes)
-#		gs = gridspec.GridSpec(1, 2)
 		
 		ax.set_title('NOAA / NSIDC IMS Snow & Ice Extent Anomaly      {}-{}-{}'.format(self.year,self.month,self.day),x=0.5)
 		ax.set_xlabel('Data source: https://nsidc.org/data/g02156',x=0.22)
 		ax.set_ylabel('https://sites.google.com/site/cryospherecomputing/snow-cover',y=0.25)
-		cax = ax.imshow(snowmap, interpolation='nearest', vmin=-1, vmax=1, cmap=cmap_anom)
-#		cbaxes = inset_axes(ax, width="5%", height="25%", loc=4)
-#		fig.colorbar(cax,ax=cbaxes, orientation='vertical',shrink=0.25,panchor=(0.0, 0.5))
+		ax.text(1.02, 0.22, 'Snow cover anomaly in percent',
+			transform=ax.transAxes,rotation='vertical',color='black', fontsize=9)
+		axins1  = inset_axes(ax, width="5%", height="25%", loc=4)
+		im1 = ax.imshow(snowmap, interpolation='nearest', vmin=-100, vmax=100, cmap=cmap_anom)
+		
+		
+		plt.colorbar(im1, cax=axins1, orientation='vertical',ticks=[-100,0,+100])
+		axins1.yaxis.set_ticks_position("left")
+		
 		ax.axes.get_yaxis().set_ticks([])
 		ax.axes.get_xaxis().set_ticks([])
 		plt.tight_layout(pad=1)
 		
-		fig.savefig('X:/Upload/Snow_Cover_Data/NOAA_Snowmap_anomaly.png')
-		fig.savefig('X:/SnowCover/Images/NOAA_Snowmap_anomaly_{}.png'.format(str(self.day_of_year).zfill(3)))
-		
+		fig_anom.savefig('X:/Upload/Snow_Cover_Data/NOAA_Snowmap_anomaly.png')
+		fig_anom.savefig('X:/SnowCover/Images/NOAA_Snowmap_anomaly_{}.png'.format(str(self.day_of_year).zfill(3)))
 
-# =============================================================================
-# 		NAchange = int(float(self.NorthAmericaExtent[-2])-float(self.NorthAmericaExtent[-1])*1e6)
-# 		GRchange = int(float(self.GreenlandExtent[-2])-float(self.GreenlandExtent[-1])*1e6)
-# 		EUchange = int(float(self.EuropeExtent[-2])-float(self.EuropeExtent[-1])*1e6)
-# 		ASchange = int(float(self.AsiaExtent[-2])-float(self.AsiaExtent[-1])*1e6)
-# 		ax2.text(0.77, 0.07, 'America: {}'.format(NAchange), fontsize=10,color='darkred',transform=ax.transAxes)
-# 		ax2.text(0.77, 0.05, 'Greenland: {}'.format(GRchange), fontsize=10,color='grey',transform=ax.transAxes)
-# 		ax2.text(0.77, 0.03, 'Europe: {}'.format(EUchange), fontsize=10,color='darkblue',transform=ax.transAxes)
-# 		ax2.text(0.77, 0.01, 'Asia: {}'.format(ASchange), fontsize=10,color='darkblue',transform=ax.transAxes)
-# =============================================================================
 #		
 		plt.pause(0.01)
 #		plt.show()
@@ -241,13 +233,27 @@ class NOAA_Snow_Cover:
 		self.loadCSVdata()
 		self.load_days()
 		self.writetofile()
+#		plt.show()
 
 
 
 action = NOAA_Snow_Cover()
 if __name__ == "__main__":
 	
-	action.automated(13,11,2018,317)
+	action.automated(3,12,2018,337)
 #	action.extentdata()
 #	action.writetofile()
-#	
+#
+'''
+region_coding
+1: Ocean
+3: North America
+4: Greenland
+5: Europe
+6: Asia
+
+biome
+222: tundra
+188: forest
+
+'''

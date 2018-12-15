@@ -3,14 +3,15 @@ import numpy as np
 def looop():
 	#day_of_year = 50
 	
-	filename = 'Masks/Landmask.msk'
-	with open(filename, 'rb') as fr:
+	filename_land = 'Masks/Landmask.msk'
+	with open(filename_land, 'rb') as fr:
 		Landmask = np.fromfile(fr, dtype='uint8')
 
 	
-	for day_of_year in range (337,339): #366
+	for day_of_year in range (1,366): #366
+		print(day_of_year)
 		stringday = str(day_of_year).zfill(3)
-		filenamedav = 'DataFiles/Mean/NOAA_Mean_{}_24km.bin'.format(stringday)
+		filename_export = 'DataFiles/Max/NOAA_Max_{}_24km.bin'.format(stringday)
 		filename7 = 'DataFiles/NOAA_2007{}_24km.bin'.format(stringday)
 		filename8 = 'DataFiles/NOAA_2008{}_24km.bin'.format(stringday)
 		filename9 = 'DataFiles/NOAA_2009{}_24km.bin'.format(stringday)
@@ -47,7 +48,7 @@ def looop():
 		except:
 			print('cant read: ',day_of_year)
 		
-		snowmean = np.zeros(len(ice16), dtype=float)
+		snow_export = np.zeros(len(ice16), dtype=float)
 		ice7f = np.array(ice7, dtype=float)
 		ice8f = np.array(ice8, dtype=float)
 		ice9f = np.array(ice9, dtype=float)
@@ -60,15 +61,12 @@ def looop():
 		ice16f = np.array(ice16, dtype=float)
 		
 		for x in range (0,len(ice16)):
-			if Landmask[x] == 2:
-				snowmean[x] = np.mean([max(3,ice7f[x]),max(3,ice8f[x]),max(3,ice9f[x]),max(3,ice10f[x]),max(3,ice11f[x]),max(3,ice12f[x]),max(3,ice13f[x]),max(3,ice14f[x]),max(3,ice15f[x]),max(3,ice16f[x])])*10
-			if Landmask[x] == 1:
-				snowmean[x] = np.mean([min(2,ice7f[x]),min(2,ice8f[x]),min(2,ice9f[x]),min(2,ice10f[x]),min(2,ice11f[x]),min(2,ice12f[x]),min(2,ice13f[x]),min(2,ice14f[x]),min(2,ice15f[x]),min(2,ice16f[x])])*10
-		
-		export = np.array(snowmean, dtype=np.uint8)
+			snow_export[x] = np.max([ice7f[x],ice8f[x],ice9f[x],ice10f[x],ice11f[x],ice12f[x],ice13f[x],ice14f[x],ice15f[x],ice16f[x]])
+
+		export = np.array(snow_export, dtype=np.uint8)
 				
 		try:
-			with open(filenamedav, 'wb') as fwr:
+			with open(filename_export, 'wb') as fwr:
 				fwr.write(export)
 			
 		except:
@@ -76,8 +74,28 @@ def looop():
 	print('Done')
 		
 
+def maxofmax():
+	maxextent = np.zeros(610*450, dtype=np.uint8)
+	for day_of_year in range (1,366): #366
+		print(day_of_year)
+		stringday = str(day_of_year).zfill(3)
+		filename = 'DataFiles/Max/NOAA_Max_{}_24km.bin'.format(stringday)
 
-looop()
+		with open(filename, 'rb') as fr:
+			ice = np.fromfile(fr, dtype=np.uint8)
+
+		for x,y in enumerate(ice):
+			if y > 2:
+				maxextent[x] = 5
+		
+	export = np.array(maxextent, dtype=np.uint8)
+	filename_export = 'Masks/Max_SnowCover.msk'
+	with open(filename_export, 'wb') as fwr:
+		fwr.write(export)
+	
+
+#looop()
+maxofmax()
 
 #plt.imshow(ice) 
 #plt.colorbar()
