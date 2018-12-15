@@ -14,6 +14,8 @@ from datetime import date
 from datetime import timedelta
 import time
 
+import ADS_netcdf
+
 
 class ADS_data:
 	def __init__  (self):
@@ -160,12 +162,16 @@ class ADS_data:
 			image_list.append(imageio.imread(os.path.join(filepath,filename)))
 		imageio.mimsave('Upload/AMSR2_SIT_Last_month.gif', image_list,duration=0.2)
 
+year = 2018
+month = 11
+day = 30
 
 action = ADS_data()
 if __name__ == "__main__":
 	print('main')
-	action.automated(31,10,2018) 
+	action.automated(day,month,year) 
 	action.makegif()
+	ADS_netcdf.action.automated(1,month,year,day)
 	#action.makegraph_compaction()
 
 '''

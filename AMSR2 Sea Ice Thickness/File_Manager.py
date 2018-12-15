@@ -43,19 +43,17 @@ def decompress(year,month):
 		pattern = r'ADS' 
 		match = re.search(pattern,file)
 		if match:
-			#print(os.path.join(filepath,file))
-			print(os.path.join('DataFiles',file[0:16]+'.dat'))
 			with gzip.open(os.path.join(filepath,file), mode='rb') as fr:
 				file_content = fr.read()
-				
+			print(os.path.join('DataFiles',file[0:16]+'.dat'))
 			with open(os.path.join('DataFiles',file[0:16]+'.dat'), 'wb') as fw:
 				fw.write(file_content)
 
 
 year = 2018
-month = 10
+month = 11
 day = 1
-daycount = 31
+daycount = 30
 
 
 #patterns: r'A_' Ascending nodes ; r'D_00' old versions;

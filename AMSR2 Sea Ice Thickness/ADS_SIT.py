@@ -6,7 +6,6 @@ The script calculates the sea ice thickness from the formatted ADS SIT data ( wi
 """
 
 import numpy as np
-import numpy.ma as ma
 import pandas
 import csv
 import matplotlib.pyplot as plt
@@ -15,15 +14,16 @@ from datetime import timedelta
 import time
 
 
+
 class ADS_data:
 
 	def __init__  (self):
 		'''initializes the melt algorithm'''
-		self.start = date(2012, 7, 3)
+		self.start = date(2018, 11, 1)
 		self.year = self.start.year
-		self.month = self.start.month
-		self.day = self.start.day
-		self.daycount = 2#2128 #total length: 2158 
+		self.stringmonth = str(self.start.month).zfill(2)
+		self.stringday = str(self.start.day).zfill(2)
+		self.daycount = 30#2128 #total length: 2158 
 		
 		self.CSVDatum = ['Date']
 		self.CSVVolume =['Volume']
@@ -103,7 +103,7 @@ class ADS_data:
 		'''main melt algorithm'''
 		loopday	= self.start	
 		day_of_year	= self.start.timetuple().tm_yday
-		self.start = time.time()
+		self.starttime = time.time()
 		self.freezedays = np.zeros(810000, dtype=float) #number of days with 20% melt, 40% melt = 2 days
 		self.meltcount = np.zeros(810000, dtype=float) #number of days with 20% melt, 40% melt = 2 days
 		self.freezecount = np.zeros(810000, dtype=float) #number of days with 20% melt, 40% melt = 2 days
@@ -114,14 +114,15 @@ class ADS_data:
 #		self.icethickess = np.array(iceread, dtype=float)/10
 				
 		for count in range (0,self.daycount,1): 
-			filename = 'Datafiles/ADS_SIT_{}{}{}.dat'.format(self.year,str(self.month).zfill(2),str(self.day).zfill(2))
+#			filepath = 'Datafiles/{}{}'.format(self.year,self.stringmonth)
+			filename = 'Datafiles/ADS_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday)
 			
 			try:
 				with open(filename, 'rb') as frr:
 					iceread = np.fromfile(frr, dtype=np.uint16)
 			except:
 				print('Date: {} not available'.format(loopday))
-				
+
 			
 			icevolume = []
 			icethickness = []
@@ -182,17 +183,17 @@ class ADS_data:
 			#export daily data as png & binary for NETCDF conversion
 			self.normalshow(self.icethickess,self.CSVVolume[-1],self.CSVThickness[-1])
 			NETCDF_export = np.array(self.icethickess, dtype=np.uint16)
-			with open('Binary/AMSR2_SIT_{}{}{}.dat'.format(self.year,str(self.month).zfill(2),str(self.day).zfill(2)),'wb') as writecumu:
+			with open('Binary/AMSR2_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday),'wb') as writecumu:
 				icewr = writecumu.write(NETCDF_export)
 									
-			self.CSVDatum.append('{}/{}/{}'.format(self.year,self.month,self.day))
+			self.CSVDatum.append('{}-{}-{}'.format(self.year,self.stringmonth,self.stringday))
 			count = count+1
 			print(round((100*count/self.daycount),2),' % \r', end="")
 			if count < self.daycount:
 				loopday = loopday+timedelta(days=1)
 				self.year = loopday.year
-				self.month = loopday.month
-				self.day = loopday.day
+				self.stringmonth = str(loopday.month).zfill(2)
+				self.stringday = str(loopday.day).zfill(2)
 				day_of_year = loopday.timetuple().tm_yday
 				
 			#print('Date: {}'.format(loopday))
@@ -211,13 +212,13 @@ class ADS_data:
 		
 		
 		self.fig.savefig('Upload/AMSR2_SIT_Last_Day.png')
-		with open('Upload/AMSR2_SIT_{}{}{}.dat'.format(str(self.year),str(self.month).zfill(2),str(self.day).zfill(2)),'wb') as writecumu:
+		with open('Upload/AMSR2_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday),'wb') as writecumu:
 			icewr = writecumu.write(self.icethickess)
 		
 		self.end = time.time()
-		self.CSVDatum.append (self.end-self.start)
+		self.CSVDatum.append (self.end-self.starttime)
 		self.CSVVolume.append ('seconds')
-		self.CSVThickness.append (str((self.end-self.start)/self.daycount)+'seconds/day')	
+		self.CSVThickness.append (str((self.end-self.starttime)/self.daycount)+'seconds/day')	
 
 		plt.show()
 
@@ -233,10 +234,10 @@ class ADS_data:
 		icethickness = int(icethickness)
 
 		
-		map1 = ma.masked_outside(icemap,0,600) # SIT
-		map2 = ma.masked_outside(icemap,5000,6000) # NoData -> Land -> Water
+		map1 = np.ma.masked_outside(icemap,0,600) # SIT
+		map2 = np.ma.masked_outside(icemap,5000,6000) # NoData -> Land -> Water
 				
-		plainmap = icemap
+#		plainmap = icemap
 				
 		colors = [(0.1, 0., 0.1), (0.6, 0.1, 0.1), (0.4, 0.4, 0.4)]  # NoData -> Land -> Water
 		cmap_name = 'my_list'
@@ -245,7 +246,7 @@ class ADS_data:
 		cmapice = plt.cm.gist_ncar
 		
 		self.ax.clear()
-		self.ax.set_title('AMSR2 Sea Ice Volume: '+str(self.year)+'-'+str(self.month).zfill(2)+'-'+str(self.day).zfill(2))
+		self.ax.set_title('AMSR2 Sea Ice Volume:  {}-{}-{}'.format(self.year,self.stringmonth,self.stringday))
 		self.ax.set_xlabel('Volume: '+str(icesum)+' 'r'$km^3$''  /  Thickness: '+str(icethickness)+' cm', fontsize=14,**self.labelfont)
 		
 		self.ax.imshow(map2, interpolation='nearest',vmin=5500, vmax=5800 ,cmap=cm4)
@@ -260,16 +261,16 @@ class ADS_data:
 		self.ax.text(-0.04, 0.60, 'https://sites.google.com/site/cryospherecomputing/amsr2-sea-ice-volume',
         transform=self.ax.transAxes,rotation='vertical',color='grey', fontsize=10)
 		self.fig.subplots_adjust(right = 1.03)
-		self.fig.savefig('Images/AMSR2_SIT_{}{}{}.png'.format(str(self.year),str(self.month).zfill(2),str(self.day).zfill(2)))
+		self.fig.savefig('Images/AMSR2_SIT_{}{}{}.png'.format(self.year,self.stringmonth,self.stringday))
 		#plt.pause(0.01)
 		
 	def viewloop(self):
 		'''used to display raw & calculated data on a map'''
 		loopday	= self.start
 		for count in range (0,self.daycount,1): 
-			#filename = 'Images/AMSR2_SIT_{}{}{}.dat'.format(str(self.year),str(self.month).zfill(2),str(self.day).zfill(2))
-			#filename = 'Analysis/AMSR2_meltcount_2012.dat'.format(str(self.year),str(self.month).zfill(2),str(self.day).zfill(2))
-			filename = 'Datafiles/ADS_SIT_{}{}{}.dat'.format(str(self.year),str(self.month).zfill(2),str(self.day).zfill(2))
+			#filename = 'Images/AMSR2_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday)
+			#filename = 'Analysis/AMSR2_meltcount_2012.dat'.format(self.year,self.stringmonth,self.stringday)
+			filename = 'Datafiles/ADS_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday)
 			
 			try:
 				with open(filename, 'rb') as frr:
@@ -301,8 +302,8 @@ class ADS_data:
 	def automated (self,day,month,year,daycount):
 		'''used only to automate monthly updates'''
 		self.year = year
-		self.month = month
-		self.day = day
+		self.stringmonth = str(month).zfill(2)
+		self.stringday = str(day).zfill(2)
 		self.daycount = daycount
 
 		self.start = date(year, month, day)
@@ -321,10 +322,10 @@ class ADS_data:
 action = ADS_data()
 if __name__ == "__main__":
 	print('main')
-	action.dayloop()
-	#action.writetofile()
+#	action.dayloop()
+#	action.writetofile()
 	#action.viewloop()
-#	action.automated(1,5,2018,31) #start-day,month,year,daycount
+	action.automated(1,11,2018,30) #start-day,month,year,daycount
 
 '''
 Current melt algorithm hyperparameters used:
