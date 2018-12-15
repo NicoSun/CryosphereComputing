@@ -2,7 +2,7 @@
 Python scripts used to run CryosphereComputing
 https://sites.google.com/site/cryospherecomputing/home
 
-All were scripts used with winPython 3.6
+All scripts were used with winPython 3.6
 https://winpython.github.io/
 
 Main libraries used:
