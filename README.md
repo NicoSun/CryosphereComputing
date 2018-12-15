@@ -11,9 +11,9 @@ numpy,
 pandas,
 matplotlib
 
-other libaries
+other libaries used for developemnt
 ----------------------
-imageio
+imageio,csv,image, netCDF4
 
 Content:
 --------
