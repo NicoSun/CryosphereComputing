@@ -213,7 +213,7 @@ class NSIDC_area:
 			
 	def writetofile(self):
 		'''writes data to a csv file'''
-		with open('X:/Upload/AreaData/Antarctic_NSIDC_Area_NRT_'+str(self.year)+'.csv', "w") as output: 
+		with open('X:/Upload/AreaData/Antarctic_NSIDC_Area_NRT.csv', "w") as output: 
 				writer = csv.writer(output, lineterminator='\n') #str(self.year)
 				for writeing in range(0,len(self.CSVArea)):
 					writer.writerow([self.CSVDatum[writeing],self.CSVArea[writeing],self.CSVExtent[writeing],self.CSVCompaction[writeing]])
@@ -222,7 +222,7 @@ class NSIDC_area:
 		
 		#NRT Data
 		Yearcolnames = ['Date', 'Area', 'Extent','Compaction']
-		Yeardata = pandas.read_csv('X:/Upload/AreaData/Antarctic_NSIDC_Area_NRT_'+str(self.year)+'.csv', names=Yearcolnames)
+		Yeardata = pandas.read_csv('X:/Upload/AreaData/Antarctic_NSIDC_Area_NRT.csv', names=Yearcolnames)
 		self.CSVDatum = Yeardata.Date.tolist()
 		self.CSVArea = Yeardata.Area.tolist()
 		self.CSVExtent = Yeardata.Extent.tolist()

@@ -355,8 +355,8 @@ class Warming:
 		plt.plot( C2018, color=(1,0.6,0.2),label='2017/18',lw=2)
 		plt.plot( self.CSVDaily, color='black',label='2018/19',lw=2)
 		
-		ymin = -3.3
-		ymax = 3.3
+		ymin = -3.1
+		ymax = 3.6
 		plt.axis([0,181,ymin,ymax])
 		
 		ax.text(0.02, 0.05, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)

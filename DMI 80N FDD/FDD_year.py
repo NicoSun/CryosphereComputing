@@ -1,13 +1,14 @@
 """
 Created on Sun Oct 21 13:36:16 2018
 @author: Nico Sun
-The script calculates the Freezing Degree Days for the freezing season at 80N (Sep-May)
+The script calculates the Freezing Degree Days for a whole year
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
+import pandas
 import csv
+ 
 
 
 class degreefreezing:
@@ -19,32 +20,21 @@ class degreefreezing:
 		self.month = 1
 		self.day = 1
 		
-	def Currentyear(self):
+	def Currentyear(self,year):
 		'''loads the current year data'''
 		with open('ZZZ_80N_List.csv', newline='') as csvfile:
 			tempreader = csv.reader(csvfile, delimiter=',')
 			tempreader = list(tempreader)
-		
-		#September-December
-		if 0 < self.month < 6:
-			for row in range(0,len(tempreader)):
-				temp = float(tempreader[row][2])
-				freezingtemp = 273.15-temp
-				self.currentjahr.append(float(self.currentjahr[-1])+freezingtemp)
-		
-		#January-May
-		if self.month > 8:
-			for row in range(244,len(tempreader)): # 244 is the real date in gapyear (date 0 exists)
-				temp = float(tempreader[row][2])
-				freezingtemp = 273.15-temp
-				self.currentjahr.append(float(self.currentjahr[-1])+freezingtemp)
+		for row in range(0,len(tempreader)):
+			temp = float(tempreader[row][2])
+			freezingtemp = 273.15-temp
+			self.currentjahr.append(self.currentjahr[-1]+freezingtemp)
 		#print(self.currentjahr)
-		
 	
 	def loaddata(self):
 		'''loads all historic data'''
 		Climatecolnames = ['A', 'B', 'C', 'D', 'E', 'F','G','H','I','J','K','L','M']
-		Climatedata = pd.read_csv('X:/DMI/DMI_FDD_Season_climate.csv', names=Climatecolnames,header=0 )	
+		Climatedata = pandas.read_csv('X:/DMI/DMI_FDD_Year_climate.csv', names=Climatecolnames,header=0)
 		self.ERA40 = Climatedata.A.tolist()
 		self.C1960s = Climatedata.B.tolist()
 		self.C1980s = Climatedata.C.tolist()
@@ -60,16 +50,9 @@ class degreefreezing:
 		self.C2017 = Climatedata.L.tolist()
 		self.C2018 = Climatedata.M.tolist()
 		
-		
-		self.labels = ['Sep','Oct','Nov','Dec','Jan', 'Feb', 'Mar', 'Apr','May','Jun']
+		#del self.ERA40[0],self.C2011[0],self.C2012[0],self.C2013[0],self.C2014[0],self.C2015[0],self.C2016[0]
+		self.labels = ['Jan', 'Feb', 'Mar', 'Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 		self.xtick = [0,30,61,91,122,153,182,213,243,274]
-		
-		#reads the previous year since September
-		if self.month < 6:
-			self.currentjahr = self.C2018
-			del (self.currentjahr[-153:]) # after new year
-			print(self.currentjahr)
-		
 		
 	
 	def makegraph(self):
@@ -86,17 +69,8 @@ class degreefreezing:
 		ax.set_yticks(major_ticks)
 		ax.grid(True)
 		ax.set_title('DMI 2m temperature for north of 80°N: Freezing Degree Days (FDD)', fontsize=12, fontweight='bold')
-		ax.text(175, 280, 'Data: DMI meanT 80N ', fontsize=10,color='black',fontweight='bold')
-		ax.text(175, 80, r'Graph by Nico Sun', fontsize=10,color='black',fontweight='bold')
-
-		lastFDD = round(float(self.currentjahr[-1]))
-		FDDthick = round(1.33*lastFDD**0.58)
-		FDDthick_anom = round(1.33*self.currentjahr[-1]**0.58) - round(1.33*self.ERA40[len(self.currentjahr)]**0.58)
-		
-		ax.text(230, 2850, 'Last FDD: '+str(lastFDD)+'°C', fontsize=10,color='black')
-		ax.text(230, 2700, 'Thickness: '+str(FDDthick)+' cm', fontsize=10,color='black')
-		ax.text(212, 2550, 'Thickness anomaly: '+str(FDDthick_anom)+' cm', fontsize=10,color='black')
-		
+		ax.text(235, 280, 'Data: DMI meanT 80N ', fontsize=10,color='black',fontweight='bold')
+		ax.text(235, 80, r'Graph by Nico Sun', fontsize=10,color='black',fontweight='bold')
 		
 		ax.text(0.01, -0.07, 'Last date: '+str(self.year)+'-'+str(self.month).zfill(2)+'-'+str(self.day).zfill(2),
         transform=ax.transAxes,
@@ -104,40 +78,40 @@ class degreefreezing:
 		ax.text(0.55, -0.07, 'https://sites.google.com/site/cryospherecomputing/fdd',
         transform=ax.transAxes,
         color='grey', fontsize=10)
-		
-		ax.text(5, 550, '50cm', fontsize=8,color='black')
-		ax.axhline(y=511,xmin=0,xmax=275,color=(0.75,0.75,0.75),lw=1,ls='--')
-		ax.text(5, 1700, '100cm', fontsize=8,color='black')
-		ax.axhline(y=1686,xmin=0,xmax=275,color=(0.5,0.5,0.5),lw=1,ls='--')
-		ax.text(5, 3400, '150cm', fontsize=8,color='black')
-		ax.axhline(y=3387,xmin=0,xmax=275,color=(0.25,0.25,0.25),lw=1,ls='--')
-		ax.text(5, 5600, 'The dashed lines represent estimated sea ice thickness, 200cm', fontsize=8,color='black')
-		ax.axhline(y=5555,xmin=0,xmax=275,color=(0.1,0.1,0.1),lw=1,ls='--')
-		
-			
+				
 		plt.plot( self.C1960s, color=(0.75,0.75,0.75),label='1960s',lw=2,ls='--')
 		plt.plot( self.C1980s, color=(0.5,0.5,0.5),label='1980s',lw=2,ls='--')
 		plt.plot( self.C2000s, color=(0.25,0.25,0.25),label='2000s',lw=2,ls='--')
 		plt.plot( self.C2010s, color=(0.1,0.1,0.1),label='2010s',lw=2,ls='--')
 #		plt.plot( self.C2011, color='red',label='2011/2',lw=2)
-		plt.plot( self.C2012, color='orange',label='2012/3',lw=2)
-		plt.plot( self.C2013, color='blue',label='2013/4',lw=2)
-#		plt.plot( self.C2014, color='purple',label='2014/5',lw=2)
-#		plt.plot( self.C2015, color='yellow',label='2015/6',lw=2)
-		plt.plot( self.C2016, color='red',label='2016/7',lw=2)
-		plt.plot( self.C2017, color='green',label='2017/8',lw=2)
-		plt.plot( self.currentjahr, color='black',label='2018/9',lw=2)
+		plt.plot( self.C2012, color='orange',label='2012',lw=2)
+		plt.plot( self.C2013, color='blue',label='2013',lw=2)
+#		plt.plot( self.C2014, color='purple',label='2014',lw=2)
+#		plt.plot( self.C2015, color='yellow',label='2015',lw=2)
+		plt.plot( self.C2016, color='red',label='2016',lw=2)
+		plt.plot( self.C2017, color='green',label='2017',lw=2)
+		plt.plot( self.C2018, color='purple',label='2018',lw=2)
+		plt.plot( self.currentjahr, color='black',label=str(self.year),lw=2)
+		
+		lastFDD = round(float(self.currentjahr[-1]))
+		averageTemp = round(lastFDD/(len(self.currentjahr)),2)
+		
+		ax.text(240, 1300, 'Last FDD: '+str(lastFDD)+'°C', fontsize=10,color='black')
+		ax.text(240, 1100, 'Mean Temp: '+str(averageTemp*(-1))+' °C', fontsize=10,color='black')
 		
 		xmin = 0
-		xmax = 275
+		xmax = 366
 		ymax = 6200
 		plt.axis([xmin,xmax,0,ymax])
 		plt.legend(loc=4, shadow=True, fontsize='medium')
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(bottom=0.08)
 		
-		fig.savefig('X:/Upload/DMI/DMI_FDD_Season.png')
-#		plt.show()
+		if self.mode == 'auto' or self.mode == 'on':
+			fig.savefig('X:/Upload/DMI/DMI_FDD_Year.png')
+		else:
+			fig.savefig('X:/Upload/DMI/DMI_FDD_Year.png')
+			plt.show()
 			
 			
 	def makeanomgraph(self):
@@ -148,7 +122,7 @@ class degreefreezing:
 		plt.xticks(self.xtick,self.labels)
 
 		ax.set_ylabel('FDD anomaly in °C')
-		major_ticks = np.arange(500, -5000, -250)
+		major_ticks = np.arange(1000, -5000, -250)
 		ax.set_yticks(major_ticks)
 		ax.grid(True)
 		ax.set_title('DMI 2m temperature for north of 80°N: Freezing Degree Days (FDD) Anomaly', fontsize=12, fontweight='bold')
@@ -167,33 +141,30 @@ class degreefreezing:
 		C2013_anom = list(map(self.minus,self.C2013,self.ERA40))
 		C2016_anom = list(map(self.minus,self.C2016,self.ERA40))
 		C2017_anom = list(map(self.minus,self.C2017,self.ERA40))
-		C2017_anom = list(map(self.minus,self.C2017,self.ERA40))
-#		C2018_anom = list(map(self.minus,self.C2018,self.ERA40))
+		C2018_anom = list(map(self.minus,self.C2018,self.ERA40))
 		current_anom = list(map(self.minus,self.currentjahr,self.ERA40))
 		
 		plt.plot( C1960s_anom, color=(0.75,0.75,0.75),label='1960s',lw=2,ls='--')
 		plt.plot( C1980s_anom, color=(0.5,0.5,0.5),label='1980s',lw=2,ls='--')
 		plt.plot( C2000s_anom, color=(0.25,0.25,0.25),label='2000s',lw=2,ls='--')
 		plt.plot( C2010s_anom, color=(0.1,0.1,0.1),label='2010s',lw=2,ls='--')
-		plt.plot( C2012_anom, color='orange',label='2012/3',lw=2)
-		plt.plot( C2013_anom, color='blue',label='2013/4',lw=2)
-		plt.plot( C2016_anom, color='red',label='2016/7',lw=2)
-		plt.plot( C2017_anom, color='green',label='2017/8',lw=2)
-#		plt.plot( C2018_anom, color='black',label='2018/9',lw=2)
-		plt.plot( current_anom, color='black',label='{}/{}'.format(2018,9),lw=2)
+		plt.plot( C2012_anom, color='orange',label='2012',lw=2)
+		plt.plot( C2013_anom, color='blue',label='2013',lw=2)
+		plt.plot( C2016_anom, color='red',label='2016',lw=2)
+		plt.plot( C2017_anom, color='green',label='2017',lw=2)
+		plt.plot( C2018_anom, color='purple',label='2018',lw=2)
+		plt.plot( current_anom, color='black',label=str(self.year),lw=2)
 		
 		lastFDD_anom = round(float(current_anom[-1]))
-		averageTemp_anom = round(lastFDD_anom/len(current_anom),2)
+		averageTemp_anom = round(lastFDD_anom/(len(current_anom)),2)
 		
+		ax.text(180, -1690, 'Last FDD anomaly: '+str(lastFDD_anom)+'°C', fontsize=10,color='black')
+		ax.text(180, -1740, 'Mean Temp anomaly: '+'{0:+1.2f}'.format(averageTemp_anom*(-1))+' °C', fontsize=10,color='black')
 		
-		ax.text(205, -140, 'Last FDD anomaly: '+str(lastFDD_anom)+'°C', fontsize=10,color='black')
-		ax.text(205, -190, 'Mean Temp anomaly: '+'{0:+1.2f}'.format(averageTemp_anom*(-1))+' °C', fontsize=10,color='black')
-		
-		
-		ax.text(45, C2016_anom[-1], 'Data: DMI meanT 80N ', fontsize=10,color='black',fontweight='bold')
-		ax.text(45, C2016_anom[-1]*1.03, r'Graph by Nico Sun', fontsize=10,color='black',fontweight='bold')
+		ax.text(62, C2016_anom[-1], 'Data: DMI meanT 80N ', fontsize=10,color='black',fontweight='bold')
+		ax.text(62, C2016_anom[-1]*1.03, r'Graph by Nico Sun', fontsize=10,color='black',fontweight='bold')
 		xmin = 0
-		xmax = 275
+		xmax = 366
 		ymax = C2016_anom[-1]*1.05
 		plt.axis([xmin,xmax,300,ymax])
 		plt.gca().invert_yaxis()
@@ -201,9 +172,13 @@ class degreefreezing:
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(bottom=0.08)
 		
-		fig.savefig('X:/Upload/DMI/DMI_FDD_Season_Anom.png')
-#		plt.show()
-				
+		if self.mode == 'auto' or self.mode == 'on':
+			fig.savefig('X:/Upload/DMI/DMI_FDD_Year_Anom.png')
+		else:
+			fig.savefig('X:/Upload/DMI/DMI_FDD_Year_Anom.png')
+			plt.show()
+		
+		
 	def automated(self,impyear,impmonth,impday):
 		'''only used for daily updates'''
 		self.mode = 'auto'
@@ -212,7 +187,7 @@ class degreefreezing:
 		self.day = impday
 		
 		self.loaddata()
-		self.Currentyear()
+		self.Currentyear(self.year)
 		self.makegraph()
 		self.makeanomgraph()
 		
@@ -224,16 +199,11 @@ class degreefreezing:
 		c = a-b
 		return c
 		
-		
 manual = degreefreezing()
 if __name__ == "__main__":
 	manual.loaddata()
-	manual.Currentyear()
+	manual.Currentyear(2019)
 #	manual.makegraph()
 	manual.makeanomgraph()
-#	manual.automated(2018)
+	#manual.automated(2017)
 
-
-'''
-Thickness (cm) = 1.33 * FDD (°C)0.58
-'''

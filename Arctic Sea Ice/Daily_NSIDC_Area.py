@@ -186,7 +186,7 @@ class NSIDC_area:
 		cmap2.set_bad('black',0.6)
 		
 		self.ax2.set_xlabel('Area Anomaly: '+str(icesum)+' million km2', fontsize=14)
-		self.cax = self.ax2.imshow(icemap, interpolation='nearest', vmin=-0.5, vmax=0.5, cmap=cmap2)
+		self.cax = self.ax2.imshow(icemap, interpolation='nearest', vmin=-0.75, vmax=0.75, cmap=cmap2)
 		
 		self.ax2.axes.get_yaxis().set_ticks([])
 		self.ax2.axes.get_xaxis().set_ticks([])
@@ -213,14 +213,14 @@ class NSIDC_area:
 			
 		if self.plottype == 'anomaly' or self.plottype == 'both':
 			self.fig2, self.ax2 = plt.subplots(figsize=(8, 10))
-			self.cax = self.ax2.imshow(self.icenull, interpolation='nearest', vmin=-50, vmax=50, cmap=plt.cm.coolwarm_r)
-			self.cbar = self.fig2.colorbar(self.cax, ticks=[-50,-25,0,25,50]).set_label('Sea Ice concentration anomaly in %')
+			self.cax = self.ax2.imshow(self.icenull, interpolation='nearest', vmin=-75, vmax=75, cmap=plt.cm.coolwarm_r)
+			self.cbar = self.fig2.colorbar(self.cax, ticks=[-75,-50,-25,0,25,50,75]).set_label('Sea Ice concentration anomaly in %')
 			#self.title = self.fig2.suptitle('Arctic Sea Ice Concentration Anomaly', fontsize=14, fontweight='bold')
 
 			
 	def writetofile(self):
 		'''writes data to a csv file'''
-		with open('X:/Upload/AreaData/Arctic_NSIDC_Area_NRT_'+str(self.year)+'.csv', "w") as output: 
+		with open('X:/Upload/AreaData/Arctic_NSIDC_Area_NRT.csv', "w") as output: 
 			writer = csv.writer(output, lineterminator='\n') #str(self.year)
 			for writeing in range(0,len(self.CSVArea)):
 				writer.writerow([self.CSVDatum[writeing],self.CSVArea[writeing],self.CSVExtent[writeing],self.CSVCompaction[writeing]])	
@@ -229,7 +229,7 @@ class NSIDC_area:
 		
 		#NRT Data
 		Yearcolnames = ['Date', 'Area', 'Extent','Compaction']
-		Yeardata = pandas.read_csv('X:/Upload/AreaData/Arctic_NSIDC_Area_NRT_'+str(self.year)+'.csv', names=Yearcolnames)
+		Yeardata = pandas.read_csv('X:/Upload/AreaData/Arctic_NSIDC_Area_NRT.csv', names=Yearcolnames)
 		self.CSVDatum = Yeardata.Date.tolist()
 		self.CSVArea = Yeardata.Area.tolist()
 		self.CSVExtent = Yeardata.Extent.tolist()
@@ -251,9 +251,7 @@ class NSIDC_area:
 		self.loadCSVdata()
 		self.dayloop()
 		self.writetofile()
-		self.makegraph()
-		self.makegraph_full()
-		self.makegraph_compaction()
+
 
 action = NSIDC_area()
 if __name__ == "__main__":
