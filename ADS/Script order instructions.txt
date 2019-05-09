@@ -1,0 +1,7 @@
+1. Download month from: https://ads.nipr.ac.jp/portal/kiwa/Summary.action?owner_site=ADS&selectFile=A20170123-003&version=1.00&scr=list_home
+2. Extract month Folder
+3. Clear Images folder
+4. Run File Manager with correct dates
+5. Copy new data into existing files
+6. Run ADS_Graphs
+7. Run Upload
