@@ -6,14 +6,9 @@ The script creates the Volume and Thickness graphs
 """
 
 import numpy as np
-import numpy.ma as ma
 import pandas
-import csv
 import matplotlib.pyplot as plt
 from datetime import date
-from datetime import timedelta
-import time
-
 import ADS_netcdf
 
 
@@ -167,11 +162,11 @@ class ADS_data:
 		image_list = []
 		for filename in os.listdir(filepath):
 			image_list.append(imageio.imread(os.path.join(filepath,filename)))
-		imageio.mimsave('Upload/AMSR2_SIT_Last_month.gif', image_list,duration=0.2)
+		imageio.mimsave('Upload/AMSR2_SIT_Last_month.gif', image_list,duration=0.33)
 
 year = 2019
-month = 4
-day = 30
+month = 12
+day = 31
 
 action = ADS_data()
 if __name__ == "__main__":

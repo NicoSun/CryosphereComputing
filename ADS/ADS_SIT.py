@@ -92,9 +92,10 @@ class ADS_data:
 		
 		for val in self.icepoleedge:
 			icepolecon.append(min(self.max_thickness,ice[val]))
-		#print(icepolecon)
+		#
+		icepolecon = np.mean(icepolecon)
 		for val2 in self.icepole:
-			ice[val2] = np.mean(icepolecon)
+			ice[val2] = icepolecon
 		
 		return ice
 		
@@ -106,10 +107,12 @@ class ADS_data:
 #		meltcount = np.zeros(810000, dtype=float) #number of days with 20% melt, 40% melt = 2 days
 #		freezecount = np.zeros(810000, dtype=float) #number of days with 20% melt, 40% melt = 2 days
 		
-		#for 2012 start date
-		with open('Datafiles/ADS_SIT_20170303.dat', 'rb') as fr:
-			iceread = np.fromfile(fr, dtype=np.uint16)
-		icethickess = np.array(iceread, dtype=float)/10
+# =============================================================================
+# 		#for 2012 start date
+# 		with open('Datafiles/ADS_SIT_20170303.dat', 'rb') as fr:
+# 			iceread = np.fromfile(fr, dtype=np.uint16)
+# 		icethickess = np.array(iceread, dtype=float)/10
+# =============================================================================
 				
 		for count in range (0,self.daycount,1): 
 #			filepath = 'Datafiles/{}{}'.format(self.year,self.stringmonth)
@@ -146,9 +149,10 @@ class ADS_data:
 			#export daily data as png & binary for NETCDF conversion
 			self.normalshow(icethickess,self.CSVVolume[-1],self.CSVThickness[-1],loopday.day)
 			NETCDF_export = np.array(icethickess, dtype=np.uint16)
-			with open('Binary/AMSR2_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday),'wb') as writecumu:
-				writecumu.write(NETCDF_export)
-									
+			self.savebinaryfile('Binary/AMSR2_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday),NETCDF_export)
+			if count == (self.daycount-1):
+				self.savebinaryfile('Upload/AMSR2_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday),icethickess)
+				
 			self.CSVDatum.append('{}-{}-{}'.format(self.year,self.stringmonth,self.stringday))
 			print(round((100*count/self.daycount),2),' % \r', end="")
 			loopday = loopday+timedelta(days=1)
@@ -171,9 +175,6 @@ class ADS_data:
 		
 		#save last available date
 		self.fig.savefig('Upload/AMSR2_SIT_Last_Day.png')
-		with open('Upload/AMSR2_SIT_{}{}{}.dat'.format(self.year,self.stringmonth,self.stringday),'wb') as writecumu:
-			icewr = writecumu.write(icethickess)
-		
 		self.end = time.time()
 		self.CSVDatum.append (self.end-self.starttime)
 		self.CSVVolume.append ('seconds')
@@ -265,6 +266,7 @@ class ADS_data:
 		self.fig.savefig('Images/AMSR2_SIT_{}{}{}.png'.format(self.year,self.stringmonth,self.stringday))
 		if day==1:
 			self.fig.savefig('Monthly_Images/AMSR2_SIT_{}{}{}.png'.format(self.year,self.stringmonth,self.stringday))
+			self.fig.savefig('X:/CC_Webpage/ADS_Images/AMSR2_SIT_{}{}{}.png'.format(self.year,self.stringmonth,self.stringday))
 		
 		#plt.pause(0.01)
 		
@@ -301,6 +303,10 @@ class ADS_data:
 			writer = csv.writer(output, lineterminator='\n') #str(self.year)
 			for writeing in range(0,len(self.CSVDatum)):
 				writer.writerow([self.CSVDatum[writeing],self.CSVVolume[writeing],self.CSVThickness[writeing]])
+				
+	def savebinaryfile(self,filename,filedata):
+		with open(filename,'wb') as writer:
+			writer.write(filedata)
 
 	
 	def automated (self,day,month,year,daycount):
@@ -327,9 +333,9 @@ action = ADS_data()
 if __name__ == "__main__":
 	print('main')
 	action.dayloop('icethickness')
-	action.writetofile()
+#	action.writetofile()
 	#action.viewloop()
-#	action.automated(1,4,2019,30) #start-day,month,year,daycount
+	action.automated(1,7,2019,31) #start-day,month,year,daycount
 
 '''
 Current melt algorithm hyperparameters used:

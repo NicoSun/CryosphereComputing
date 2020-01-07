@@ -1,14 +1,12 @@
 '''
 NOAA Daily Snow Extent / Ice Extent Data
-
-
 array size: 247500 (550:450)
 '''
+
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
-import csv
 import pandas
 
 
@@ -67,7 +65,7 @@ class NOAA_Snow_Cover:
 		with open(filenameMean, 'rb') as fr:
 			snowMean = np.fromfile(fr, dtype=np.float16)
 		with open(filename, 'rb') as fr:
-			snow = np.fromfile(fr, dtype='uint8')
+			snow_map = np.fromfile(fr, dtype='uint8')
 		with open(filenameyesterday, 'rb') as fr:
 			snowy = np.fromfile(fr, dtype='uint8')
 
@@ -75,7 +73,7 @@ class NOAA_Snow_Cover:
 		snowy = np.array(snowy,dtype=np.float)
 			
 		aaa = np.vectorize(self.calculateExtent)
-		iceextent,NorthAmericaExtent,GreenlandExtent,EuropeExtent,AsiaExtent,snowanomaly,snowchange = aaa(snow,self.regionmask,self.pixelarea,snowMean,snowy)
+		iceextent,NorthAmericaExtent,GreenlandExtent,EuropeExtent,AsiaExtent,snowanomaly_map,snowchange = aaa(snow_map,self.regionmask,self.pixelarea,snowMean,snowy)
 
 		data = [np.sum(iceextent),np.sum(NorthAmericaExtent),np.sum(GreenlandExtent),np.sum(EuropeExtent),np.sum(AsiaExtent)]
 		snowextent= np.sum(data[1:])
@@ -88,16 +86,21 @@ class NOAA_Snow_Cover:
 		self.EuropeExtent.append (data[3]/1e6)
 		self.AsiaExtent.append (data[4]/1e6)
 		
-		for x,y in enumerate(snowanomaly):
+		for x,y in enumerate(snowanomaly_map):
 			if self.coastmask[x]==3:
-				snowanomaly[x]=3
+				snowanomaly_map[x]=3
 			if snowchange[x]==-2:
-				snow[x]=6
+				snow_map[x]=6
 			if snowchange[x]==2:
-				snow[x]=7
+				snow_map[x]=7
 		
-		self.createmap(snow,snowextent,iceextent)
-		self.create_anolamy_map(snowanomaly)
+		snowanomaly_value = snowextent - self.MSnow
+		iceanomaly_value = iceextent - self.MSeaIce
+		
+# =============================================================================
+# 		self.createmap(snow_map,snowextent,iceextent)
+# 		self.create_anolamy_map(snowanomaly_map,snowanomaly_value,iceanomaly_value)
+# =============================================================================
 		
 
 	def calculateExtent(self,snowmap,regionmask,pixelarea,snowMean,snowy):
@@ -160,9 +163,9 @@ class NOAA_Snow_Cover:
 		fig.savefig('X:/Upload/Snow_Cover_Data/NOAA_Snowmap.png')
 		fig.savefig('X:/SnowCover/Images/NOAA_Snowmap_normal_{}.png'.format(str(self.day_of_year).zfill(3)))
 		plt.draw()
-		plt.pause(0.01)
+		plt.close()
 		
-	def create_anolamy_map(self,snowmap):
+	def create_anolamy_map(self,snowmap,snowanomaly,iceanomaly):
 		'''displays snow cover anomaly data'''
 		snowmap = ma.masked_greater(snowmap, 2)
 		snowmap = snowmap.reshape(610,450)
@@ -174,12 +177,15 @@ class NOAA_Snow_Cover:
 		ax.clear()
 		
 		ax.text(0.82, 0.98, 'Map: Nico Sun', fontsize=10,color='black',transform=ax.transAxes)
+		ax.text(0.6, 0.05, 'Ice anomaly: '+'{:,}'.format(iceanomaly)+' 'r'$km^2$', fontsize=10,color='black',transform=ax.transAxes)
+		ax.text(0.6, 0.03, 'Snow anomaly: '+'{:,}'.format(snowanomaly)+' 'r'$km^2$', fontsize=10,color='black',transform=ax.transAxes)
+
 		
 		ax.set_title('NOAA / NSIDC IMS Snow & Ice Extent Anomaly      {}-{}-{}'.format(self.year,self.month,self.day),x=0.5)
 		ax.set_xlabel('cryospherecomputing.tk',x=0.25)
 		ax.set_ylabel('Data source: nsidc.org/data/g02156',y=0.15)
 
-		ax.text(1.02, 0.22, 'Snow cover anomaly in percent',
+		ax.text(1.02, 0.33, 'Snow cover anomaly in percent (Base 2000-2019)',
 			transform=ax.transAxes,rotation='vertical',color='black', fontsize=9)
 		axins1  = inset_axes(ax, width="5%", height="25%", loc=4)
 		im1 = ax.imshow(snowmap, interpolation='nearest', vmin=-100, vmax=100, cmap=cmap_anom)
@@ -194,19 +200,13 @@ class NOAA_Snow_Cover:
 		
 		fig_anom.savefig('X:/Upload/Snow_Cover_Data/NOAA_Snowmap_anomaly.png')
 		fig_anom.savefig('X:/SnowCover/Images/NOAA_Snowmap_anomaly_{}.png'.format(str(self.day_of_year).zfill(3)))
-
-		plt.pause(0.01)
+		plt.close()
 		
+				
+	def csvexport(self,filename,filedata):
+		np.savetxt(filename, np.column_stack((filedata)), delimiter=",", fmt='%s')
 
-			
-	def writetofile(self):
-		'''writes NRT data to a csv file'''
-		with open('X:/Upload/Snow_Cover_Data/NRT_extent_data_'+str(self.year)+'.csv', "w") as output:
-			writer = csv.writer(output, lineterminator='\n') #str(self.year)
-			for x in range(0,len(self.IceExtent)):
-				writer.writerow([self.CSVDatum[x],self.IceExtent[x],self.NorthAmericaExtent[x],self.GreenlandExtent[x],self.EuropeExtent[x],self.AsiaExtent[x]])
-
-	def loadCSVdata(self):
+	def loadCSVdata(self,doy):
 		'''loads NRT data'''
 		#NRT Data
 		Yearcolnames = ['Date', 'IceExtent', 'NorthAmericaExtent','GreenlandExtent','EuropeExtent','AsiaExtent']
@@ -218,6 +218,19 @@ class NOAA_Snow_Cover:
 		self.EuropeExtent = Yeardata.EuropeExtent.tolist()
 		self.AsiaExtent = Yeardata.AsiaExtent.tolist()
 		
+		#Mean value Data
+		Meancolnames = ['Date','SeaIce', 'NorthAmerica', 'Greenland', 'Europe', 'Asia']
+		Meandata = pandas.read_csv('X:/Upload/Snow_Cover_Data/Mean_extents.csv', names=Meancolnames,header=0)
+		MSeaIce = Meandata.SeaIce.tolist()
+		MAmerica = Meandata.NorthAmerica.tolist()
+		MGreenland = Meandata.Greenland.tolist()
+		MEurope = Meandata.Europe.tolist()
+		MAsia = Meandata.Asia.tolist()
+		
+		self.MSeaIce = int(MSeaIce[doy-1]*1e6)
+		self.MSnow = int((MAmerica[doy-1] + MGreenland[doy-1] + MEurope[doy-1] + MAsia[doy-1])*1E6)
+		
+		
 	def automated(self,day,month,year,dayofyear):
 		'''function to automate parts of the monthly update procedure'''
 		self.year = year
@@ -226,17 +239,18 @@ class NOAA_Snow_Cover:
 		self.day_of_year = dayofyear
 
 
-		self.loadCSVdata()
+		self.loadCSVdata(self.day_of_year)
 		self.load_days()
-		self.writetofile()
-#		plt.show()
+		self.csvexport('X:/Upload/Snow_Cover_Data/NRT_extent_data_'+str(self.year)+'.csv',
+			[self.CSVDatum,self.IceExtent,self.NorthAmericaExtent,self.GreenlandExtent,self.EuropeExtent,self.AsiaExtent])
+		plt.show()
 
 
 
 action = NOAA_Snow_Cover()
 if __name__ == "__main__":
 	
-	action.automated(20,1,2019,20)
+	action.automated(1,1,2020,6)
 #	action.extentdata()
 #	action.writetofile()
 #

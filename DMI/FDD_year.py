@@ -14,9 +14,8 @@ import csv
 class degreefreezing:
 
 	def __init__ (self):
-		self.mode = 'man'
 		self.currentjahr = [0]
-		self.year = 2019
+		self.year = 2020
 		self.month = 1
 		self.day = 1
 		
@@ -30,10 +29,11 @@ class degreefreezing:
 			freezingtemp = 273.15-temp
 			self.currentjahr.append(self.currentjahr[-1]+freezingtemp)
 		#print(self.currentjahr)
+		
 	
 	def loaddata(self):
 		'''loads all historic data'''
-		Climatecolnames = ['A', 'B', 'C', 'D', 'E', 'F','G','H','I','J','K','L','M']
+		Climatecolnames = ['A', 'B', 'C', 'D', 'E', 'F','G','H','I']
 		Climatedata = pandas.read_csv('X:/DMI/DMI_FDD_Year_climate.csv', names=Climatecolnames,header=0)
 		self.ERA40 = Climatedata.A.tolist()
 		self.C1960s = Climatedata.B.tolist()
@@ -41,18 +41,14 @@ class degreefreezing:
 		self.C2000s = Climatedata.D.tolist()
 		self.C2010s = Climatedata.E.tolist()
 		
-		self.C2011 = Climatedata.F.tolist()
-		self.C2012 = Climatedata.G.tolist()
-		self.C2013 = Climatedata.H.tolist()
-		self.C2014 = Climatedata.I.tolist()
-		self.C2015 = Climatedata.J.tolist()
-		self.C2016 = Climatedata.K.tolist()
-		self.C2017 = Climatedata.L.tolist()
-		self.C2018 = Climatedata.M.tolist()
+		self.C2015 = Climatedata.F.tolist()
+		self.C2016 = Climatedata.G.tolist()
+		self.C2017 = Climatedata.H.tolist()
+		self.C2018 = Climatedata.I.tolist()
 		
 		#del self.ERA40[0],self.C2011[0],self.C2012[0],self.C2013[0],self.C2014[0],self.C2015[0],self.C2016[0]
 		self.labels = ['Jan', 'Feb', 'Mar', 'Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-		self.xtick = [0,30,61,91,122,153,182,213,243,274]
+		self.xtick = [0,30,59,90,120,151,181,212,243,273,304,334]
 		
 	
 	def makegraph(self):
@@ -75,19 +71,14 @@ class degreefreezing:
 		ax.text(0.01, -0.07, 'Last date: '+str(self.year)+'-'+str(self.month).zfill(2)+'-'+str(self.day).zfill(2),
         transform=ax.transAxes,
         color='grey', fontsize=10)
-		ax.text(0.55, -0.07, 'https://sites.google.com/site/cryospherecomputing/fdd',
-        transform=ax.transAxes,
-        color='grey', fontsize=10)
+		ax.text(0.75, -0.07, 'cryospherecomputing.tk',transform=ax.transAxes,color='grey', fontsize=10)
 				
 		plt.plot( self.C1960s, color=(0.75,0.75,0.75),label='1960s',lw=2,ls='--')
 		plt.plot( self.C1980s, color=(0.5,0.5,0.5),label='1980s',lw=2,ls='--')
 		plt.plot( self.C2000s, color=(0.25,0.25,0.25),label='2000s',lw=2,ls='--')
 		plt.plot( self.C2010s, color=(0.1,0.1,0.1),label='2010s',lw=2,ls='--')
-#		plt.plot( self.C2011, color='red',label='2011/2',lw=2)
-		plt.plot( self.C2012, color='orange',label='2012',lw=2)
-		plt.plot( self.C2013, color='blue',label='2013',lw=2)
-#		plt.plot( self.C2014, color='purple',label='2014',lw=2)
-#		plt.plot( self.C2015, color='yellow',label='2015',lw=2)
+#		plt.plot( self.C2013, color='blue',label='2013',lw=2)
+		plt.plot( self.C2015, color='orange',label='2015',lw=2)
 		plt.plot( self.C2016, color='red',label='2016',lw=2)
 		plt.plot( self.C2017, color='green',label='2017',lw=2)
 		plt.plot( self.C2018, color='purple',label='2018',lw=2)
@@ -107,11 +98,8 @@ class degreefreezing:
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(bottom=0.08)
 		
-		if self.mode == 'auto' or self.mode == 'on':
-			fig.savefig('X:/Upload/DMI/DMI_FDD_Year.png')
-		else:
-			fig.savefig('X:/Upload/DMI/DMI_FDD_Year.png')
-			plt.show()
+		fig.savefig('X:/Upload/DMI/DMI_FDD_Year.png')
+
 			
 			
 	def makeanomgraph(self):
@@ -129,16 +117,13 @@ class degreefreezing:
 		ax.text(0.01, -0.07, 'Last date: '+str(self.year)+'-'+str(self.month).zfill(2)+'-'+str(self.day).zfill(2),
         transform=ax.transAxes,
         color='grey', fontsize=10)
-		ax.text(0.55, -0.07, 'https://sites.google.com/site/cryospherecomputing/fdd',
-        transform=ax.transAxes,
-        color='grey', fontsize=10)
+		ax.text(0.75, -0.07, 'cryospherecomputing.tk',transform=ax.transAxes,color='grey', fontsize=10)
 		
 		C1960s_anom = list(map(self.minus,self.C1960s,self.ERA40))
 		C1980s_anom = list(map(self.minus,self.C1980s,self.ERA40))
 		C2000s_anom = list(map(self.minus,self.C2000s,self.ERA40))
 		C2010s_anom = list(map(self.minus,self.C2010s,self.ERA40))
-		C2012_anom = list(map(self.minus,self.C2012,self.ERA40))
-		C2013_anom = list(map(self.minus,self.C2013,self.ERA40))
+		C2015_anom = list(map(self.minus,self.C2015,self.ERA40))
 		C2016_anom = list(map(self.minus,self.C2016,self.ERA40))
 		C2017_anom = list(map(self.minus,self.C2017,self.ERA40))
 		C2018_anom = list(map(self.minus,self.C2018,self.ERA40))
@@ -148,8 +133,8 @@ class degreefreezing:
 		plt.plot( C1980s_anom, color=(0.5,0.5,0.5),label='1980s',lw=2,ls='--')
 		plt.plot( C2000s_anom, color=(0.25,0.25,0.25),label='2000s',lw=2,ls='--')
 		plt.plot( C2010s_anom, color=(0.1,0.1,0.1),label='2010s',lw=2,ls='--')
-		plt.plot( C2012_anom, color='orange',label='2012',lw=2)
-		plt.plot( C2013_anom, color='blue',label='2013',lw=2)
+#		plt.plot( C2013_anom, color='blue',label='2013',lw=2)
+		plt.plot( C2015_anom, color='orange',label='2015',lw=2)
 		plt.plot( C2016_anom, color='red',label='2016',lw=2)
 		plt.plot( C2017_anom, color='green',label='2017',lw=2)
 		plt.plot( C2018_anom, color='purple',label='2018',lw=2)
@@ -172,12 +157,7 @@ class degreefreezing:
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(bottom=0.08)
 		
-		if self.mode == 'auto' or self.mode == 'on':
-			fig.savefig('X:/Upload/DMI/DMI_FDD_Year_Anom.png')
-		else:
-			fig.savefig('X:/Upload/DMI/DMI_FDD_Year_Anom.png')
-			plt.show()
-		
+		fig.savefig('X:/Upload/DMI/DMI_FDD_Year_Anom.png')
 		
 	def automated(self,impyear,impmonth,impday):
 		'''only used for daily updates'''
@@ -202,8 +182,8 @@ class degreefreezing:
 manual = degreefreezing()
 if __name__ == "__main__":
 	manual.loaddata()
-	manual.Currentyear(2019)
-#	manual.makegraph()
+	manual.Currentyear(2020)
+	manual.makegraph()
 	manual.makeanomgraph()
 	#manual.automated(2017)
 

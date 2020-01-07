@@ -15,9 +15,9 @@ class degreefreezing:
 	def __init__ (self):
 		self.mode = 'man'
 		self.currentjahr = [0]
-		self.year = 2019
+		self.year = 2020
 		self.month = 1
-		self.day = 1
+		self.day = 7
 		
 	def Currentyear(self):
 		'''loads the current year data'''
@@ -25,14 +25,14 @@ class degreefreezing:
 			tempreader = csv.reader(csvfile, delimiter=',')
 			tempreader = list(tempreader)
 		
-		#September-December
-		if 0 < self.month < 6:
+		#January-May
+		if 0 < self.month < 7:
 			for row in range(0,len(tempreader)):
 				temp = float(tempreader[row][2])
 				freezingtemp = 273.15-temp
 				self.currentjahr.append(float(self.currentjahr[-1])+freezingtemp)
 		
-		#January-May
+		#September-December
 		if self.month > 8:
 			for row in range(244,len(tempreader)): # 244 is the real date in gapyear (date 0 exists)
 				temp = float(tempreader[row][2])
@@ -43,7 +43,7 @@ class degreefreezing:
 	
 	def loaddata(self):
 		'''loads all historic data'''
-		Climatecolnames = ['A', 'B', 'C', 'D', 'E', 'F','G','H','I','J','K','L','M']
+		Climatecolnames = ['A', 'B', 'C', 'D', 'E', 'F','G','H','I']
 		Climatedata = pd.read_csv('X:/DMI/DMI_FDD_Season_climate.csv', names=Climatecolnames,header=0 )	
 		self.ERA40 = Climatedata.A.tolist()
 		self.C1960s = Climatedata.B.tolist()
@@ -51,14 +51,10 @@ class degreefreezing:
 		self.C2000s = Climatedata.D.tolist()
 		self.C2010s = Climatedata.E.tolist()
 		
-		self.C2011 = Climatedata.F.tolist()
-		self.C2012 = Climatedata.G.tolist()
-		self.C2013 = Climatedata.H.tolist()
-		self.C2014 = Climatedata.I.tolist()
-		self.C2015 = Climatedata.J.tolist()
-		self.C2016 = Climatedata.K.tolist()
-		self.C2017 = Climatedata.L.tolist()
-		self.C2018 = Climatedata.M.tolist()
+		self.C2015 = Climatedata.F.tolist()
+		self.C2016 = Climatedata.G.tolist()
+		self.C2017 = Climatedata.H.tolist()
+		self.C2019 = Climatedata.I.tolist()
 		
 		
 		self.labels = ['Sep','Oct','Nov','Dec','Jan', 'Feb', 'Mar', 'Apr','May','Jun']
@@ -66,8 +62,8 @@ class degreefreezing:
 		
 		#reads the previous year since September
 		if self.month < 6:
-			self.currentjahr = self.C2018
-			del (self.currentjahr[-153:]) # after new year
+			self.currentjahr = self.C2019
+			del (self.currentjahr[-153:]) # deletes NAN values
 			print(self.currentjahr)
 		
 		
@@ -101,9 +97,7 @@ class degreefreezing:
 		ax.text(0.01, -0.07, 'Last date: '+str(self.year)+'-'+str(self.month).zfill(2)+'-'+str(self.day).zfill(2),
         transform=ax.transAxes,
         color='grey', fontsize=10)
-		ax.text(0.55, -0.07, 'https://sites.google.com/site/cryospherecomputing/fdd',
-        transform=ax.transAxes,
-        color='grey', fontsize=10)
+		ax.text(0.75, -0.07, 'cryospherecomputing.tk',transform=ax.transAxes,color='grey', fontsize=10)
 		
 		ax.text(5, 550, '50cm', fontsize=8,color='black')
 		ax.axhline(y=511,xmin=0,xmax=275,color=(0.75,0.75,0.75),lw=1,ls='--')
@@ -119,14 +113,12 @@ class degreefreezing:
 		plt.plot( self.C1980s, color=(0.5,0.5,0.5),label='1980s',lw=2,ls='--')
 		plt.plot( self.C2000s, color=(0.25,0.25,0.25),label='2000s',lw=2,ls='--')
 		plt.plot( self.C2010s, color=(0.1,0.1,0.1),label='2010s',lw=2,ls='--')
-#		plt.plot( self.C2011, color='red',label='2011/2',lw=2)
-		plt.plot( self.C2012, color='orange',label='2012/3',lw=2)
-		plt.plot( self.C2013, color='blue',label='2013/4',lw=2)
-#		plt.plot( self.C2014, color='purple',label='2014/5',lw=2)
-#		plt.plot( self.C2015, color='yellow',label='2015/6',lw=2)
+#		plt.plot( self.C2013, color='blue',label='2013/4',lw=2)
+		plt.plot( self.C2015, color='orange',label='2015/6',lw=2)
 		plt.plot( self.C2016, color='red',label='2016/7',lw=2)
 		plt.plot( self.C2017, color='green',label='2017/8',lw=2)
-		plt.plot( self.currentjahr, color='black',label='2018/9',lw=2)
+#		plt.plot( self.C2018, color='purple',label='2018/9',lw=2)
+		plt.plot( self.currentjahr, color='black',label='2019/20',lw=2)
 		
 		xmin = 0
 		xmax = 275
@@ -155,32 +147,29 @@ class degreefreezing:
 		ax.text(0.01, -0.07, 'Last date: '+str(self.year)+'-'+str(self.month).zfill(2)+'-'+str(self.day).zfill(2),
         transform=ax.transAxes,
         color='grey', fontsize=10)
-		ax.text(0.55, -0.07, 'https://sites.google.com/site/cryospherecomputing/fdd',
-        transform=ax.transAxes,
-        color='grey', fontsize=10)
+		ax.text(0.75, -0.07, 'cryospherecomputing.tk',transform=ax.transAxes,color='grey', fontsize=10)
 		
 		C1960s_anom = list(map(self.minus,self.C1960s,self.ERA40))
 		C1980s_anom = list(map(self.minus,self.C1980s,self.ERA40))
 		C2000s_anom = list(map(self.minus,self.C2000s,self.ERA40))
 		C2010s_anom = list(map(self.minus,self.C2010s,self.ERA40))
-		C2012_anom = list(map(self.minus,self.C2012,self.ERA40))
-		C2013_anom = list(map(self.minus,self.C2013,self.ERA40))
+		C2015_anom = list(map(self.minus,self.C2015,self.ERA40))
 		C2016_anom = list(map(self.minus,self.C2016,self.ERA40))
 		C2017_anom = list(map(self.minus,self.C2017,self.ERA40))
-		C2017_anom = list(map(self.minus,self.C2017,self.ERA40))
 #		C2018_anom = list(map(self.minus,self.C2018,self.ERA40))
+#		C2019_anom = list(map(self.minus,self.C2019,self.ERA40))
 		current_anom = list(map(self.minus,self.currentjahr,self.ERA40))
 		
 		plt.plot( C1960s_anom, color=(0.75,0.75,0.75),label='1960s',lw=2,ls='--')
 		plt.plot( C1980s_anom, color=(0.5,0.5,0.5),label='1980s',lw=2,ls='--')
 		plt.plot( C2000s_anom, color=(0.25,0.25,0.25),label='2000s',lw=2,ls='--')
 		plt.plot( C2010s_anom, color=(0.1,0.1,0.1),label='2010s',lw=2,ls='--')
-		plt.plot( C2012_anom, color='orange',label='2012/3',lw=2)
-		plt.plot( C2013_anom, color='blue',label='2013/4',lw=2)
+#		plt.plot( C2012_anom, color='blue',label='2012/3',lw=2)
+		plt.plot( C2015_anom, color='orange',label='2015/6',lw=2)
 		plt.plot( C2016_anom, color='red',label='2016/7',lw=2)
 		plt.plot( C2017_anom, color='green',label='2017/8',lw=2)
-#		plt.plot( C2018_anom, color='black',label='2018/9',lw=2)
-		plt.plot( current_anom, color='black',label='{}/{}'.format(2018,9),lw=2)
+#		plt.plot( C2018_anom, color='purple',label='2018/9',lw=2)
+		plt.plot( current_anom, color='black',label='{}/{}'.format(2019,20),lw=2)
 		
 		lastFDD_anom = round(float(current_anom[-1]))
 		averageTemp_anom = round(lastFDD_anom/len(current_anom),2)
@@ -229,7 +218,7 @@ manual = degreefreezing()
 if __name__ == "__main__":
 	manual.loaddata()
 	manual.Currentyear()
-#	manual.makegraph()
+	manual.makegraph()
 	manual.makeanomgraph()
 #	manual.automated(2018)
 

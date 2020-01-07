@@ -17,7 +17,7 @@ class NSIDC_Graph:
 		fig.suptitle('Antarctic Sea Ice Area', fontsize=14, fontweight='bold')
 		ax = fig.add_subplot(111)
 		labels = ['Jan', 'Feb', 'Mar', 'Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan']
-		x = [0,30,59,90,120,151,181,212,243,273,304,334,366]
+		x = [0,31,60,91,121,152,182,213,244,274,305,335,366] # 1st Jan is day zero
 		plt.xticks(x,labels)
 
 		ax.set_ylabel('Sea Ice Area in 'r'[$10^6$ $km^2$]')
@@ -59,6 +59,7 @@ class NSIDC_Graph:
 		fig.subplots_adjust(top=0.95)
 		fig.subplots_adjust(bottom=0.08)
 		fig.savefig('X:/Upload/Antarctic_Graph.png')
+		plt.close()
 
 
 	def makegraph_full(self):
@@ -112,6 +113,7 @@ class NSIDC_Graph:
 		fig.subplots_adjust(top=0.95)
 		fig.subplots_adjust(bottom=0.06)
 		fig.savefig('X:/Upload/Antarctic_Graph_full.png')
+		plt.close()
 	
 	def makegraph_compaction(self):
 		#del self.CSVCompaction[0]
@@ -166,6 +168,7 @@ class NSIDC_Graph:
 		fig.subplots_adjust(top=0.95)
 		fig.subplots_adjust(bottom=0.06)
 		fig.savefig('X:/Upload/Antarctic_Graph_Compaction.png')
+		plt.close()
 
 	def loadCSVdata (self):
 	

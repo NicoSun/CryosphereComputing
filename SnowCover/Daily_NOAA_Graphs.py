@@ -41,8 +41,6 @@ class ADS_data:
 		ax.grid(True)
 		
 		x = np.arange(366)
-		IceSDup = [x+2*y for x,y in zip(self.MSeaIce,self.SD_SeaIce)]
-		IceSDdown = [x-2*y for x,y in zip(self.MSeaIce,self.SD_SeaIce)]
 		
 		AmericaSDup = [x+2*y for x,y in zip(self.MAmerica,self.SD_America)]
 		AmericaSDdown = [x-2*y for x,y in zip(self.MAmerica,self.SD_America)]
@@ -74,9 +72,14 @@ class ADS_data:
 		plt.plot( self.NRT_Europe1, color='green',lw=1)
 		plt.plot( self.NRT_Asia1, color='black',label='{}'.format(self.preyear),lw=1)
 		
+		America_anom = int((self.NRT_America[self.dayofyear] - self.MAmerica[self.dayofyear])*1e6)
+		Europe_anom = int((self.NRT_Europe[self.dayofyear] - self.MEurope[self.dayofyear])*1e6)
+		Asia_anom = int((self.NRT_Asia[self.dayofyear] - self.MAsia[self.dayofyear])*1e6)
 		
-#		last_value =  int(self.V2018[-1])
-#		ax.text(0.75, 0.01, 'Last value: '+'{:,}'.format(last_value)+' 'r'$km^3$', fontsize=10,color='black',transform=ax.transAxes)
+		
+		ax.text(0.6, 0.95, 'America anomaly: '+'{:,}'.format(America_anom)+' 'r'$km^2$', fontsize=10,color='black',transform=ax.transAxes)
+		ax.text(0.6, 0.93, 'Europe anomaly: '+'{:,}'.format(Europe_anom)+' 'r'$km^2$', fontsize=10,color='black',transform=ax.transAxes)
+		ax.text(0.6, 0.91, 'Asia anomaly: '+'{:,}'.format(Asia_anom)+' 'r'$km^2$', fontsize=10,color='black',transform=ax.transAxes)
 		
 		ymin = 0
 		ymax = 28
@@ -85,7 +88,9 @@ class ADS_data:
 		fig.tight_layout(pad=2)
 		fig.subplots_adjust(top=0.95)
 		fig.savefig('X:/Upload/Snow_Cover_Data/NOAA_SnowCover.png')
+		
 #		plt.show()
+		plt.close()
 
 			
 	def makemultiyeargraph(self):
@@ -111,8 +116,10 @@ class ADS_data:
 		ax.grid(True)
 		
 		x = np.arange(366)
-		IceSDup = [x+2*y for x,y in zip(self.MSeaIce,self.SD_SeaIce)]
-		IceSDdown = [x-2*y for x,y in zip(self.MSeaIce,self.SD_SeaIce)]
+# =============================================================================
+# 		IceSDup = [x+2*y for x,y in zip(self.MSeaIce,self.SD_SeaIce)]
+# 		IceSDdown = [x-2*y for x,y in zip(self.MSeaIce,self.SD_SeaIce)]
+# =============================================================================
 		
 		AmericaSDup = [x+2*y for x,y in zip(self.MAmerica,self.SD_America)]
 		AmericaSDdown = [x-2*y for x,y in zip(self.MAmerica,self.SD_America)]
@@ -155,6 +162,7 @@ class ADS_data:
 		fig.subplots_adjust(top=0.95)
 #		fig.savefig('X:/Upload/Snow_Cover_Data/NOAA_SnowCover_multiyear.png')
 #		plt.show()
+		plt.close()
 
 	
 	def loadCSVdata (self):
@@ -186,7 +194,7 @@ class ADS_data:
 		self.NRT_Greenland = NRTdata.Greenland.tolist()
 		self.NRT_Europe = NRTdata.Europe.tolist()
 		self.NRT_Asia = NRTdata.Asia.tolist()
-		
+				
 		self.preyear = 2012
 		
 		#NRT Data last year
@@ -208,8 +216,9 @@ class ADS_data:
 		self.year = year
 		self.month =str(month).zfill(2)
 		self.day = str(day).zfill(2)
-		self.dayofyear = dayofyear
+		self.dayofyear = dayofyear-1
 
+			
 		self.loadCSVdata()
 		self.makeYeargraph()
 #		self.makemultiyeargraph()
@@ -245,14 +254,9 @@ class ADS_data:
 action = ADS_data()
 if __name__ == "__main__":
 	print('main')
-#	action.automated(9,11,2018,313) 
+	action.automated(6,1,2020,5) 
 #	action.makeYeargraph()
-	action.loadCSVdata()
-	action.makeYeargraph()
+#	action.loadCSVdata()
+#	action.makeYeargraph()
 #	action.makemultiyeargraph()
 #	action.makegif()
-
-'''
-Citation:
-
-'''

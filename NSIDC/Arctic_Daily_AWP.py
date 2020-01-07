@@ -1,5 +1,4 @@
 import numpy as np
-import csv
 import pandas
 import matplotlib.pyplot as plt
 
@@ -94,25 +93,24 @@ class AWP_calc_daily:
 		self.year = loopday.year
 		self.stringmonth = str(loopday.month).zfill(2)
 		self.stringday = str(loopday.day).zfill(2)
-		for count in range (1,40):
+		for count in range (1,188):
 			print(self.year ,self.stringmonth, self.stringday)
-			self.daycalc(count,0,0)
+			self.daycalc(count,4.7,1946.01)
 		
 			loopday = loopday+timedelta(days=1)
 			self.year = loopday.year
 			self.stringmonth = str(loopday.month).zfill(2)
 			self.stringday = str(loopday.day).zfill(2)
-		self.writetofile()
+		self.export_data()
 		
 	def daycalc(self,DayofYear,AWP_Daily_mean,AWP_Accu_mean):
 		'''for loop to load binary data files and pass them to the calculation function
 		'''
 
 		filename = 'X:/NSIDC/DataFiles/NSIDC_{}{}{}.bin'.format(self.year,self.stringmonth,self.stringday)
-	#	filenameMean = 'X:/NSIDC/DataFiles/Daily_Mean/NSIDC_Mean_{}{}.bin'.format(self.stringmonth,self.stringday)
-		filenameAWPMean = 'X:/NSIDC/DataFiles/Mean_00_18/AWP_mean_{}{}.bin'.format(self.stringmonth,self.stringday)
+		filenameMean = 'X:/NSIDC/DataFiles/Mean_00_19/NSIDC_Mean_{}{}.bin'.format(self.stringmonth,self.stringday)
 						
-		with open(filenameAWPMean, 'rb') as fr:
+		with open(filenameMean, 'rb') as fr:
 			iceMean = np.fromfile(fr, dtype=np.uint8)
 		with open(filename, 'rb') as frr:
 			ice = np.fromfile(frr, dtype=np.uint8)
@@ -213,14 +211,18 @@ class AWP_calc_daily:
 		self.CA_daily.append (round((np.sum(self.CA_daily_calc)/np.sum(self.CAarea)),3))
 		self.AB_daily.append (round((np.sum(self.AB_daily_calc)/np.sum(self.ABarea)),3))
 		
-
-		self.normalshow(AWPdaily,self.CSVDaily[-1])
-		self.cumulativeshow(self.AWPcumulative,round(self.CSVCumu[-1],0))
-			
-		AWP_Daily_mean = self.CSVDaily[-1] - float(AWP_Daily_mean)
-		AWP_Accu_mean = self.CSVCumu[-1] - float(AWP_Accu_mean)
-		self.anomalyshow(AWPanomaly,round(AWP_Daily_mean,2))
-		self.anomalyshow_accu(self.AWPanomaly_acumu,round(AWP_Accu_mean,2))
+		if DayofYear > 186:
+			self.normalshow(AWPdaily,self.CSVDaily[-1])
+			self.cumulativeshow(self.AWPcumulative,round(self.CSVCumu[-1],0))
+	# =============================================================================
+	# 		plt.close()
+	# 		plt.close()
+	# =============================================================================
+				
+			AWP_Daily_anom = self.CSVDaily[-1] - float(AWP_Daily_mean)
+			AWP_Accu_anom = self.CSVCumu[-1] - float(AWP_Accu_mean)
+			self.anomalyshow(AWPanomaly,round(AWP_Daily_anom,2))
+			self.anomalyshow_accu(self.AWPanomaly_acumu,round(AWP_Accu_anom,2))
 
 
 		
@@ -316,8 +318,11 @@ class AWP_calc_daily:
 		icemap = icemap.reshape(448, 304)
 		icemap = icemap[50:430,20:260]
 		icemap = np.ma.masked_greater(icemap, 9000)
+		
 		cmap = plt.cm.coolwarm
 		cmap.set_bad('black',0.8)
+		
+		cbarmax = min(30,int(np.amax(icemap)))
 		
 		self.ax.clear()
 		self.ax.set_title('Albedo-Warming Potential',loc='left')
@@ -325,8 +330,8 @@ class AWP_calc_daily:
 		#self.ax.set_title('Maximum of Maxima: {}-{}')
 		
 		
-		self.ax.set_xlabel('Mean: '+str(icesum)+' [MJ / 'r'$m^2$]',**self.labelfont)
-		self.cax = self.ax.imshow(icemap, interpolation='nearest', vmin=0, vmax=30, cmap=cmap)
+		self.ax.set_xlabel('Pan Arctic Mean: '+str(icesum)+' [MJ / 'r'$m^2$]',**self.labelfont)
+		cax = self.ax.imshow(icemap, interpolation='nearest', vmin=0, vmax=cbarmax, cmap=cmap)
 		
 		self.ax.axes.get_yaxis().set_ticks([])
 		self.ax.axes.get_xaxis().set_ticks([])
@@ -334,9 +339,13 @@ class AWP_calc_daily:
 		self.ax.text(2, 12, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold')
 		self.ax.text(-0.04, 0.25, 'cryospherecomputing.tk/awp',
         transform=self.ax.transAxes,rotation='vertical',color='grey', fontsize=10)
+		
+		cbar = self.fig.colorbar(cax, ticks=[0,cbarmax*0.25,cbarmax*0.5,cbarmax*0.75,cbarmax]).set_label('clear sky energy absorption in [MJ / 'r'$m^2$]',**self.labelfont)
+		
 		self.fig.tight_layout(pad=1)
 		plt.pause(0.01)
 		self.fig.savefig('X:/Upload/AWP/North_AWP_Map1.png')
+		
 		
 	def cumulativeshow(self,icemap,icesum):
 		'''displays cumulative AWP data'''
@@ -346,13 +355,15 @@ class AWP_calc_daily:
 		cmap2 = plt.cm.coolwarm
 		cmap2.set_bad('black',0.8)
 		
+		cbarmax = min(5000,int(np.amax(icemap)))
+		
 		self.ax2.clear()
 		self.ax2.set_title('Accumulated AWP',loc='left')
 		self.ax2.set_title('Date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),loc='right')
 
 		
-		self.ax2.set_xlabel('Mean: '+str(icesum)+' [MJ / 'r'$m^2$]',**self.labelfont)
-		self.cax = self.ax2.imshow(icemap, interpolation='nearest', vmin=0, vmax=5000, cmap=cmap2)
+		self.ax2.set_xlabel('Pan Arctic Mean: '+str(int(icesum))+' [MJ / 'r'$m^2$]',**self.labelfont)
+		cax = self.ax2.imshow(icemap, interpolation='nearest', vmin=0, vmax=cbarmax, cmap=cmap2)
 		
 		self.ax2.axes.get_yaxis().set_ticks([])
 		self.ax2.axes.get_xaxis().set_ticks([])
@@ -360,110 +371,103 @@ class AWP_calc_daily:
 		self.ax2.text(2, 12, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold')
 		self.ax2.text(-0.04, 0.25, 'cryospherecomputing.tk/awp',
         transform=self.ax2.transAxes,rotation='vertical',color='grey', fontsize=10)
+		
+		cbar = self.fig2.colorbar(cax, ticks=[0,cbarmax*0.25,cbarmax*0.5,cbarmax*0.75,cbarmax]).set_label('clear sky energy absorption in [MJ / 'r'$m^2$]',**self.labelfont)
+		
 		self.fig2.tight_layout(pad=1)
 		plt.pause(0.01)
 		self.fig2.savefig('X:/Upload/AWP/North_AWP_Map2.png')
 		
 	def anomalyshow(self,icemap,icesum):
 		'''displays anomaly AWP data'''
-		cmap = plt.cm.coolwarm
-		cmap.set_bad('black',0.66)
-		
 		for x,y in enumerate(self.regmaskf):
 			if y > 15:
-				icemap[x] = 9999
-		
+				icemap[x] = 99
 		icemap = np.ma.masked_outside(icemap,-50,50) 
 		icemap = icemap.reshape(448, 304)
 		icemap = icemap[50:430,20:260]
+		cmap = plt.cm.coolwarm
+		cmap.set_bad('black',0.66)
+		
+		lowestAWP = np.amin(icemap)
+		highestAWP = np.amax(icemap)
+		
+		cbarmax = int(max(abs(lowestAWP),highestAWP,10))
+		
 		fig = plt.figure(figsize=(7.5, 9))
 		ax = fig.add_subplot(111)
 
-		cax = ax.imshow(icemap, interpolation='nearest', vmin=-18, vmax=18, cmap=cmap)
-		cbar = fig.colorbar(cax, ticks=[-18,-9,0,9,18]).set_label('clear sky energy absorption anomaly in [MJ / 'r'$m^2$]')
-		
-		ax.imshow(icemap, interpolation='nearest', vmin=-18, vmax=18, cmap=cmap)
-		
+		cax = ax.imshow(icemap, interpolation='nearest', vmin=-cbarmax, vmax=cbarmax, cmap=cmap)
+		cbar = fig.colorbar(cax, ticks=[-cbarmax,-0.5*cbarmax,0,0.5*cbarmax,cbarmax]).set_label('clear sky energy absorption anomaly in [MJ / 'r'$m^2$]')
+				
 		ax.axes.get_yaxis().set_ticks([])
 		ax.axes.get_xaxis().set_ticks([])
-		ax.set_xlabel('Anomaly: '+str(icesum)+' [MJ / 'r'$m^2$]',**self.labelfont)
+		ax.set_xlabel('Pan Arctic Anomaly: '+str(icesum)+' [MJ / 'r'$m^2$]',**self.labelfont)
 		ax.set_ylabel('cryospherecomputing.tk/awp',y=0.15)
 		ax.set_title('Albedo-Warming Potential Anomaly',loc='left')
 		ax.set_title('Date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),loc='right')
 		
 		ax.text(2, 8, r'Map: Nico Sun', fontsize=10,color='black',fontweight='bold')
-		ax.text(160, 375,r'Anomaly Base: 2000-2018', fontsize=8,color='black',fontweight='bold')
+		ax.text(160, 375,r'Anomaly Base: 2000-2019', fontsize=8,color='black',fontweight='bold')
 		fig.tight_layout()
 		plt.pause(0.01)
 		fig.savefig('X:/Upload/AWP/North_AWP_Map3.png')
+		plt.close()
 		
 	def anomalyshow_accu(self,icemap,icesum):
 		'''displays anomaly AWP data'''
-		cmap = plt.cm.coolwarm
-		cmap.set_bad('black',0.66)
-		
 		for x,y in enumerate(self.regmaskf):
 			if y > 15:
 				icemap[x] = 9999
-		
 		icemap = np.ma.masked_outside(icemap,-5000,5000) 
 		icemap = icemap.reshape(448, 304)
 		icemap = icemap[50:430,20:260]
+		cmap = plt.cm.coolwarm
+		cmap.set_bad('black',0.66)
+		
+		lowestAWP = np.amin(icemap)
+		highestAWP = np.amax(icemap)
+		
+		cbarmax = int(min(abs(lowestAWP),highestAWP,1000))
+		
 		fig = plt.figure(figsize=(7.5, 9))
 		ax = fig.add_subplot(111)
 
-		cax = ax.imshow(icemap, interpolation='nearest', vmin=-1000, vmax=1000, cmap=cmap)
-		cbar = fig.colorbar(cax, ticks=[-1000,-500,0,500,1000]).set_label('clear sky energy absorption anomaly in [MJ / 'r'$m^2$]')
-		
-		ax.imshow(icemap, interpolation='nearest', vmin=-1000, vmax=1000, cmap=cmap)
+		cax = ax.imshow(icemap, interpolation='nearest', vmin=-cbarmax, vmax=cbarmax, cmap=cmap)
+		cbar = fig.colorbar(cax, ticks=[-cbarmax,-0.5*cbarmax,0,0.5*cbarmax,cbarmax]).set_label('clear sky energy absorption anomaly in [MJ / 'r'$m^2$]')
 		
 		ax.axes.get_yaxis().set_ticks([])
 		ax.axes.get_xaxis().set_ticks([])
-		ax.set_xlabel('Anomaly: '+str(icesum)+' [MJ / 'r'$m^2$]',**self.labelfont)
+		ax.set_xlabel('Pan Arctic Anomaly: '+str(icesum)+' [MJ / 'r'$m^2$]',**self.labelfont)
 		ax.set_ylabel('cryospherecomputing.tk/awp',y=0.15)
 		ax.set_title('Accumulated AWP Anomaly',loc='left')
 		ax.set_title('Date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),loc='right')
 		
 		ax.text(2, 8, r'Map: Nico Sun', fontsize=10,color='black',fontweight='bold')
-		ax.text(160, 375,r'Anomaly Base: 2000-2018', fontsize=8,color='black',fontweight='bold')
+		ax.text(160, 375,r'Anomaly Base: 2000-2019', fontsize=8,color='black',fontweight='bold')
 		fig.tight_layout()
 		plt.pause(0.01)
 		fig.savefig('X:/Upload/AWP/North_AWP_Map4.png')
+		plt.close()
 		
 	def dailyorcumu(self):
-		'''creates separate figures for sea ice data'''
-		self.icenull = np.zeros(len(self.regmaskf), dtype=float)
-		self.icenull = self.icenull.reshape(448, 304)
-		
+		'''creates separate figures for sea ice data'''	
 		self.fig, self.ax = plt.subplots(figsize=(7.5, 9))
-		self.cax = self.ax.imshow(self.icenull, interpolation='nearest', vmin=0, vmax=30, cmap=plt.cm.coolwarm)
-		self.cbar = self.fig.colorbar(self.cax, ticks=[0,5,10,15,20,25,30]).set_label('clear sky energy absorption in [MJ / 'r'$m^2$]',**self.labelfont)
-
 		self.fig2, self.ax2 = plt.subplots(figsize=(7.5, 9))
-		self.cax = self.ax2.imshow(self.icenull, interpolation='nearest', vmin=0, vmax=5000, cmap=plt.cm.coolwarm)
-		self.cbar = self.fig2.colorbar(self.cax, ticks=[0,1000,2000,3000,4000,5000]).set_label('clear sky energy absorption in [MJ / 'r'$m^2$]',**self.labelfont)
 			
+			
+	def csvexport(self,filename,filedata):
+		np.savetxt(filename, np.column_stack((filedata)), delimiter=",", fmt='%s')
 		
-	def writetofile(self):
-		
-		#csv files
-		with open('X:/Upload/AWP_data/Arctic_AWP_NRT.csv', "w") as output:
-			writer = csv.writer(output, lineterminator='\n')
-			for x in range(0,(len(self.CSVDaily))):
-				writer.writerow([self.CSVDatum[x],self.CSVDaily[x],self.CSVCumu[x],self.CSVDaily_central[x],self.CSVAccu_central[x]])
-				 
-		with open('X:/Upload/AWP_data/Arctic_AWP_NRT_regional.csv', "w") as output:
-			writer = csv.writer(output, lineterminator='\n')
-			for x in range(0,(len(self.SoO))):
-				writer.writerow([self.CSVDatum[x],self.SoO[x],self.Bers[x],self.HB[x],self.BB[x],self.EG[x],
-					 self.BaS[x],self.KS[x],self.LS[x],self.ES[x],self.CS[x],self.BeaS[x],self.CA[x],self.AB[x]])
-				
-		with open('X:/Upload/AWP_data/Arctic_AWP_NRT_regional_daily.csv', "w") as output:
-			writer = csv.writer(output, lineterminator='\n')
-			for x in range(0,(len(self.SoO_daily))):
-				writer.writerow([self.CSVDatum[x],self.SoO_daily[x],self.Bers_daily[x],self.HB_daily[x],self.BB_daily[x],
-					 self.EG_daily[x],self.BaS_daily[x],self.KS_daily[x],self.LS_daily[x],self.ES_daily[x],self.CS_daily[x],
-				self.BeaS_daily[x],self.CA_daily[x],self.AB_daily[x]])
+	def export_data(self):
+		self.csvexport('X:/Upload/AWP_data/Arctic_AWP_NRT.csv'.format(self.year),
+				[self.CSVDatum,self.CSVDaily,self.CSVCumu,self.CSVDaily_central,self.CSVAccu_central])
+		self.csvexport('X:/Upload/AWP_data/Arctic_AWP_NRT_regional.csv'.format(self.year),
+				[self.CSVDatum,self.SoO,self.Bers,self.HB,self.BB,self.EG,self.BaS,
+				self.KS,self.LS,self.ES,self.CS,self.BeaS,self.CA,self.AB])
+		self.csvexport('X:/Upload/AWP_data/Arctic_AWP_NRT_regional_daily.csv'.format(self.year),
+				[self.CSVDatum,self.SoO_daily,self.Bers_daily,self.HB_daily,self.BB_daily,self.EG_daily,self.BaS_daily,self.KS_daily,
+				 self.LS_daily,self.ES_daily,self.CS_daily,self.BeaS_daily,self.CA_daily,self.AB_daily])
 		
 		#save binary accumulative files
 		with open('X:/Upload/AWP_data/Arctic_AWP_Accu.bin', 'wb') as writecumu:
@@ -539,7 +543,7 @@ class AWP_calc_daily:
 		index = len(self.CSVDaily)
 #		print(self.AWP_Daily_mean[index])
 		self.daycalc(index,self.AWP_Daily_mean[index],self.AWP_Accu_mean[index])
-		self.writetofile()
+		self.export_data()
 		
 		import Arctic_Daily_AWP_Graphs
 		Arctic_Daily_AWP_Graphs.action.automated(self.year,stringmonth,stringday)
@@ -550,8 +554,8 @@ action = AWP_calc_daily()
 
 	
 if __name__ == '__main__':
-	action.automated(2019,'04','30')
-#	action.dayloop()
+#	action.automated(2019,'08','27')
+	action.dayloop()
 	
 
 

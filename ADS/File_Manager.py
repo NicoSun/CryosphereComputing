@@ -8,8 +8,6 @@ https://ads.nipr.ac.jp/portal/kiwa/Summary.action?owner_site=ADS&selectFile=A201
 """
 
 import os
-import sys
-import shutil
 import re
 import gzip
 import ADS_SIT
@@ -22,6 +20,15 @@ def deletion(year,month,pattern):
 		if re.search(pattern,file):
 			print(os.path.join(filepath,file))
 			os.remove(os.path.join(filepath,file))
+			
+def clearfolder():
+	'''this function deletes last months images'''
+	filepath = 'Binary'
+	filepath_2 = 'Images'
+	for file in os.listdir(filepath):
+		os.remove(os.path.join(filepath,file))
+	for file in os.listdir(filepath_2):
+		os.remove(os.path.join(filepath_2,file))
 
 	
 def rename(year,month):
@@ -51,12 +58,13 @@ def decompress(year,month):
 
 
 year = 2019
-month = 4
+month = 12
 day = 1
-daycount = 30
+daycount = 31
 
 
 #patterns: r'A_' Ascending nodes ; r'D_00' old versions;
+clearfolder()
 deletion(year,month,r'A_')
 deletion(year,month,r'D_00')
 rename(year,month)

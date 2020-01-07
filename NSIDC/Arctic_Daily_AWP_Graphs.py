@@ -8,6 +8,9 @@ class AWP_graphs:
 
 	def __init__  (self):
 		self.labelfont = {'fontname':'Arial'}
+		self.year = 2019
+		self.stringmonth = '07'
+		self.stringday = '07'
 		
 	def minus(self,a,b):
 		'''calculates the FDD anomaly'''
@@ -17,27 +20,104 @@ class AWP_graphs:
 		return c
 		
 
-	def dailygraph(self):
+	def daily_graph(self):
 		
-		Climatecolnames = ['Date', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
-		Climatedata = pandas.read_csv('X:/Upload/AWP_data/Climatology/Arctic_AWP_pan_Daily.csv', names=Climatecolnames,header=0)
-		Date = Climatedata.Date.tolist()
+		fig = plt.figure(figsize=(10,6.5))
+		fig.suptitle('Daily Pan Arctic Albedo-Warming Potential', fontsize=14, fontweight='bold')
+		ax = fig.add_subplot(1,1,1)
+		labels = ['Mar','Apr','May','Jun','Jul', 'Aug', 'Sep']
+		x = [-20,11,42,72,103,134,163]
+		plt.xticks(x,labels)
+
+		ax.set_ylabel('clear sky energy absorption in [MJ / 'r'$m^2$]',**self.labelfont)
+		major_ticks = np.arange(0,40,2.5)
+		ax.set_yticks(major_ticks)
 		
-		C2000s = Climatedata.A.tolist()
-		C2010s = Climatedata.B.tolist()
-		C2012 = Climatedata.C.tolist()
-		C2013 = Climatedata.D.tolist()
-		C2016 = Climatedata.E.tolist()
-		C2017 = Climatedata.F.tolist()
-		C2018 = Climatedata.G.tolist()
+		ax.text(0.01, -0.06, 'Last date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),
+        transform=ax.transAxes,color='grey', fontsize=10)
+		ax.text(0.75, -0.06, 'cryospherecomputing.tk/awp',transform=ax.transAxes,color='grey', fontsize=10)
 		
-		C2000s_anom = list(map(self.minus,C2000s,self.AWP_Daily_mean))
-		C2010s_anom = list(map(self.minus,C2010s,self.AWP_Daily_mean))
-		C2012_anom = list(map(self.minus,C2012,self.AWP_Daily_mean))
-		C2013_anom = list(map(self.minus,C2013,self.AWP_Daily_mean))
-		C2016_anom = list(map(self.minus,C2016,self.AWP_Daily_mean))
-		C2017_anom = list(map(self.minus,C2017,self.AWP_Daily_mean))
-		C2018_anom = list(map(self.minus,C2018,self.AWP_Daily_mean))
+		ax.grid(True)
+		plt.plot( self.Icefree_daily, color=(0.1,0.1,0.7),label='IceFree',lw=2,ls='--')
+		plt.plot( self.C1980s_daily, color=(0.75,0.75,0.75),label='1980s',lw=2,ls='--')
+		plt.plot( self.C2000s_daily, color=(0.5,0.5,0.5),label='2000s',lw=2,ls='--')
+#		plt.plot( self.C2010s_daily, color=(0.25,0.25,0.25),label='2010s',lw=2,ls='--')
+		plt.plot( self.C2012_daily, color='orange',label='2012',lw=1)
+		plt.plot( self.C2016_daily, color='green',label='2016',lw=1)
+#		plt.plot( self.C2018_daily, color='brown',label='2018',lw=1)
+		plt.plot( self.CSVDaily, color='black',label='2019',lw=2)
+		
+		ymin = 0
+		ymax = 28
+		plt.axis([0,186,ymin,ymax])
+		
+		last_value =  round(self.CSVDaily[-1],3)
+		ax.text(0.01, 0.01, 'Last value: '+'{} {}'.format(last_value,'[MJ / 'r'$m^2$]'), fontsize=10,color='black',transform=ax.transAxes)
+		
+		ax.text(0.02, 0.96, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		ax.text(0.02, 0.93, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		
+		lgd = ax.legend(loc='upper right')
+		fig.tight_layout(pad=1)
+		fig.subplots_adjust(top=0.95)
+		fig.savefig('X:/Upload/AWP/North_AWP_Graph5.png',bbox_extra_artists=(lgd,))
+		plt.close()
+#		plt.show()
+		
+	def accu_graph(self):
+		
+		fig = plt.figure(figsize=(10,6.5))
+		fig.suptitle('Accumulated Pan Arctic Albedo-Warming Potential', fontsize=14, fontweight='bold')
+		ax = fig.add_subplot(1,1,1)
+		labels = ['Mar','Apr','May','Jun','Jul', 'Aug', 'Sep']
+		x = [-20,11,42,72,103,134,163]
+		plt.xticks(x,labels)
+
+		ax.set_ylabel('clear sky energy absorption in [MJ / 'r'$m^2$]',**self.labelfont)
+		major_ticks = np.arange(0,5000,500)
+		ax.set_yticks(major_ticks)
+		
+		ax.text(0.01, -0.06, 'Last date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),
+        transform=ax.transAxes,color='grey', fontsize=10)
+		ax.text(0.75, -0.06, 'cryospherecomputing.tk/awp',transform=ax.transAxes,color='grey', fontsize=10)
+		
+		ax.grid(True)
+		plt.plot( self.Icefree, color=(0.1,0.1,0.7),label='IceFree',lw=2,ls='--')
+		plt.plot( self.C1980s, color=(0.75,0.75,0.75),label='1980s',lw=2,ls='--')
+		plt.plot( self.C2000s, color=(0.5,0.5,0.5),label='2000s',lw=2,ls='--')
+#		plt.plot( self.C2010s, color=(0.25,0.25,0.25),label='2010s',lw=2,ls='--')
+		plt.plot( self.C2012, color='orange',label='2012',lw=1)
+		plt.plot( self.C2016, color='green',label='2016',lw=1)
+#		plt.plot( self.C2018, color='brown',label='2018',lw=1)
+		plt.plot( self.CSVCumu, color='black',label='2019',lw=2)
+		
+		ymin = 0
+		ymax = 3300
+		plt.axis([0,186,ymin,ymax])
+		
+		last_value =  int(self.CSVCumu[-1])
+		ax.text(0.66, 0.01, 'Last value: '+'{} {}'.format(last_value,'[MJ / 'r'$m^2$]'), fontsize=10,color='black',transform=ax.transAxes)
+		
+		ax.text(0.02, 0.96, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		ax.text(0.02, 0.93, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		
+		lgd = ax.legend(loc='lower right')
+		fig.tight_layout(pad=1)
+		fig.subplots_adjust(top=0.95)
+		
+		fig.savefig('X:/Upload/AWP/North_AWP_Graph6.png',bbox_extra_artists=(lgd,))
+		plt.close()
+#		plt.show()
+
+	def daily_anomaly(self):
+				
+		C2000s_anom = list(map(self.minus,self.C2000s_daily,self.AWP_Daily_mean))
+		C2010s_anom = list(map(self.minus,self.C2010s_daily,self.AWP_Daily_mean))
+		C2012_anom = list(map(self.minus,self.C2012_daily,self.AWP_Daily_mean))
+		C2013_anom = list(map(self.minus,self.C2013_daily,self.AWP_Daily_mean))
+		C2016_anom = list(map(self.minus,self.C2016_daily,self.AWP_Daily_mean))
+		C2017_anom = list(map(self.minus,self.C2017_daily,self.AWP_Daily_mean))
+		C2018_anom = list(map(self.minus,self.C2018_daily,self.AWP_Daily_mean))
 		current_anom = list(map(self.minus,self.CSVDaily,self.AWP_Daily_mean))
 	
 		
@@ -49,13 +129,13 @@ class AWP_graphs:
 		plt.xticks(x,labels)
 
 		ax.set_ylabel('clear sky energy absorption anomaly in [MJ / 'r'$m^2$]',**self.labelfont)
-		major_ticks = np.arange(-10,10,0.5)
+		major_ticks = np.arange(-10,10,0.25)
 		ax.set_yticks(major_ticks)
 		
 		ax.text(0.01, -0.06, 'Last date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),
         transform=ax.transAxes,color='grey', fontsize=10)
 		ax.text(0.75, -0.06, 'cryospherecomputing.tk/awp',transform=ax.transAxes,color='grey', fontsize=10)
-		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2018', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
+		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2019', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
 		
 		ax.grid(True)
 		plt.plot( C2000s_anom, color=(0.7,0.7,0.7),label='2000s',lw=2,ls='--')
@@ -72,40 +152,29 @@ class AWP_graphs:
 		plt.axis([0,186,ymin,ymax])
 		
 		ax.text(0.02, 0.05, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
-		ax.text(0.02, 0.03, r'Calculations: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		ax.text(0.02, 0.03, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
 		
 		lgd = ax.legend(loc='upper right')
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(top=0.95)
 		fig.savefig('X:/Upload/AWP/North_AWP_Graph1.png',bbox_extra_artists=(lgd,))
+		plt.close()
 
 	
-	def cumugraph(self):
+	def accumu_anomaly(self):
 		
-		Climatecolnames = ['Date', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
-		Climatedata = pandas.read_csv('X:/Upload/AWP_data/Climatology/Arctic_AWP_pan_Acumulated.csv', names=Climatecolnames,header=0)
-		Date = Climatedata.Date.tolist()
-		
-		C2000s = Climatedata.A.tolist()
-		C2010s = Climatedata.B.tolist()
-		C2012 = Climatedata.C.tolist()
-		C2013 = Climatedata.D.tolist()
-		C2016 = Climatedata.E.tolist()
-		C2017 = Climatedata.F.tolist()
-		C2018 = Climatedata.G.tolist()
-		
-		C2000s_anom = list(map(self.minus,C2000s,self.AWP_Accu_mean))
-		C2010s_anom = list(map(self.minus,C2010s,self.AWP_Accu_mean))
-		C2012_anom = list(map(self.minus,C2012,self.AWP_Accu_mean))
-		C2013_anom = list(map(self.minus,C2013,self.AWP_Accu_mean))
-		C2016_anom = list(map(self.minus,C2016,self.AWP_Accu_mean))
-		C2017_anom = list(map(self.minus,C2017,self.AWP_Accu_mean))
-		C2018_anom = list(map(self.minus,C2018,self.AWP_Accu_mean))
+		C2000s_anom = list(map(self.minus,self.C2000s,self.AWP_Accu_mean))
+		C2010s_anom = list(map(self.minus,self.C2010s,self.AWP_Accu_mean))
+		C2012_anom = list(map(self.minus,self.C2012,self.AWP_Accu_mean))
+		C2013_anom = list(map(self.minus,self.C2013,self.AWP_Accu_mean))
+		C2016_anom = list(map(self.minus,self.C2016,self.AWP_Accu_mean))
+		C2017_anom = list(map(self.minus,self.C2017,self.AWP_Accu_mean))
+		C2018_anom = list(map(self.minus,self.C2018,self.AWP_Accu_mean))
 		current_anom = list(map(self.minus,self.CSVCumu,self.AWP_Accu_mean))
 	
 		
 		fig = plt.figure(figsize=(10,6.5))
-		fig.suptitle('Acumulated Pan Arctic Albedo-Warming Potential (Anomaly)', fontsize=14, fontweight='bold')
+		fig.suptitle('Accumulated Pan Arctic Albedo-Warming Potential (Anomaly)', fontsize=14, fontweight='bold')
 		ax = fig.add_subplot(111)
 		labels = ['Mar','Apr','May','Jun','Jul', 'Aug', 'Sep']
 		x = [-20,11,42,72,103,134,163]
@@ -118,7 +187,7 @@ class AWP_graphs:
 		ax.text(0.01, -0.06, 'Last date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),
         transform=ax.transAxes,color='grey', fontsize=10)
 		ax.text(0.75, -0.06, 'cryospherecomputing.tk/awp', transform=ax.transAxes, color='grey', fontsize=10)
-		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2018', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
+		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2019', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
 		
 		ax.grid(True)
 		plt.plot( C2000s_anom, color=(0.7,0.7,0.7),label='2000s',lw=2,ls='--')
@@ -131,16 +200,17 @@ class AWP_graphs:
 		plt.plot( current_anom, color='black',label='2019',lw=2)
 		
 		ymin = -60
-		ymax = 120
+		ymax = 125
 		plt.axis([0,186,ymin,ymax])
 		
 		ax.text(0.02, 0.05, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
-		ax.text(0.02, 0.03, r'Calculations: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		ax.text(0.02, 0.03, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
 		
 		lgd = ax.legend(loc='upper left')
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(top=0.95)
 		fig.savefig('X:/Upload/AWP/North_AWP_Graph2.png',bbox_extra_artists=(lgd,))
+		plt.close()
 		
 	def centredailygraph(self):
 		
@@ -180,7 +250,7 @@ class AWP_graphs:
 		ax.text(0.01, -0.06, 'Last date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),
         transform=ax.transAxes,color='grey', fontsize=10)
 		ax.text(0.75, -0.06, 'cryospherecomputing.tk/awp',transform=ax.transAxes,color='grey', fontsize=10)
-		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2018', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
+		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2019', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
 		
 		ax.grid(True)
 		plt.plot( C2000s_anom, color=(0.7,0.7,0.7),label='2000s',lw=2,ls='--')
@@ -197,18 +267,19 @@ class AWP_graphs:
 		plt.axis([0,186,ymin,ymax])
 		
 		ax.text(0.02, 0.05, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
-		ax.text(0.02, 0.03, r'Calculations: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		ax.text(0.02, 0.03, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
 		
 		lgd = ax.legend(loc='upper right')
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(top=0.95)
 		fig.savefig('X:/Upload/AWP/North_AWP_Graph3.png',bbox_extra_artists=(lgd,))
+		plt.close()
 
 	
 	def centreaccumulatedgraph(self):
 		
 		Climatecolnames = ['Date', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
-		Climatedata = pandas.read_csv('X:/Upload/AWP_data/Climatology/Arctic_AWP_centre_Acumulated.csv', names=Climatecolnames,header=0)
+		Climatedata = pandas.read_csv('X:/Upload/AWP_data/Climatology/Arctic_AWP_centre_Accumulated.csv', names=Climatecolnames,header=0)
 		Date = Climatedata.Date.tolist()
 		
 		C2000s = Climatedata.A.tolist()
@@ -230,7 +301,7 @@ class AWP_graphs:
 	
 		
 		fig = plt.figure(figsize=(10,6.5))
-		fig.suptitle('Acumulated High Arctic Albedo-Warming Potential (Anomaly)', fontsize=14, fontweight='bold')
+		fig.suptitle('Accumulated High Arctic Albedo-Warming Potential (Anomaly)', fontsize=14, fontweight='bold')
 		ax = fig.add_subplot(111)
 		labels = ['Mar','Apr','May','Jun','Jul', 'Aug', 'Sep']
 		x = [-20,11,42,72,103,134,163]
@@ -243,7 +314,7 @@ class AWP_graphs:
 		ax.text(0.01, -0.06, 'Last date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday),
         transform=ax.transAxes,color='grey', fontsize=10)
 		ax.text(0.75, -0.06, 'cryospherecomputing.tk/awp', transform=ax.transAxes, color='grey', fontsize=10)
-		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2018', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
+		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2019', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
 		
 		ax.grid(True)
 		plt.plot( C2000s_anom, color=(0.7,0.7,0.7),label='2000s',lw=2,ls='--')
@@ -260,12 +331,13 @@ class AWP_graphs:
 		plt.axis([0,186,ymin,ymax])
 		
 		ax.text(0.02, 0.05, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
-		ax.text(0.02, 0.03, r'Calculations: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		ax.text(0.02, 0.03, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
 		
 		lgd = ax.legend(loc='upper left')
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(top=0.95)
 		fig.savefig('X:/Upload/AWP/North_AWP_Graph4.png',bbox_extra_artists=(lgd,))
+		plt.close()
 
 			
 	def regiongraph(self):
@@ -305,7 +377,7 @@ class AWP_graphs:
 		data = [Region1,Region2,Region3,Region4,Region5,Region6,Region7,Region8,Region9,Region10,Region11,Region12,Region13]
 
 		fig = plt.figure(figsize=(10,6.5))
-		fig.suptitle(str(self.year)+' Acumulated Regional Albedo-Warming Potential (Anomaly)', fontsize=14, fontweight='bold')
+		fig.suptitle(str(self.year)+' Accumulated Regional Albedo-Warming Potential (Anomaly)', fontsize=14, fontweight='bold')
 		ax = fig.add_subplot(111)
 		labels = ['Mar','Apr','May','Jun','Jul', 'Aug', 'Sep']
 		x = [-20,11,42,72,103,134,163]
@@ -319,7 +391,7 @@ class AWP_graphs:
         transform=ax.transAxes,
         color='grey', fontsize=10)
 		ax.text(0.75, -0.06, 'cryospherecomputing.tk/awp', transform=ax.transAxes, color='grey', fontsize=10)
-		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2018', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
+		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2019', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
 		
 		ax.grid(True)
 		
@@ -347,16 +419,17 @@ class AWP_graphs:
 			if value < ymin:
 				ymin = value
 			
-		plt.axis([0,len(Region1),min(-15,ymin*1.1),ymax*1.1])
+		plt.axis([0,len(Region1),min(-40,ymin-15),ymax+15])
 		
 		ax.text(0.02, 0.05, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
-		ax.text(0.02, 0.03, r'Calculations: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		ax.text(0.02, 0.03, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
 		
 		lgd = ax.legend(loc='upper left')
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(top=0.95)
 		#fig.subplots_adjust(bottom=0.1)
 		fig.savefig('X:/Upload/AWP/North_AWP_Graph_Region1.png')
+		plt.close()
 
 			
 	def regiongraph_daily(self):
@@ -410,7 +483,7 @@ class AWP_graphs:
         transform=ax.transAxes,
         color='grey', fontsize=10)
 		ax.text(0.75, -0.06, 'cryospherecomputing.tk/awp', transform=ax.transAxes, color='grey', fontsize=10)
-		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2018', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
+		ax.text(0.75, 0.02, 'Anomaly Base: 2000-2019', color='black',fontweight='bold',transform=ax.transAxes, fontsize=10)
 		
 		ax.grid(True)
 		
@@ -428,18 +501,19 @@ class AWP_graphs:
 		plt.plot( Region12, color=(1,0.26,1),label='Can. Archipelago',lw=2)
 		plt.plot( Region13, color='black',label='Central Arctic',lw=2)
 		
-		ymin = -3
-		ymax = 6
+		ymin = -2
+		ymax = 6.6
 					
 		plt.axis([0,len(Region1),ymin,ymax])
 		
 		ax.text(0.02, 0.05, r'Concentration Data: NSIDC', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
-		ax.text(0.02, 0.03, r'Calculations: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
+		ax.text(0.02, 0.03, r'AWP Model: Nico Sun', fontsize=10,color='black',fontweight='bold',transform=ax.transAxes)
 		
 		lgd = ax.legend(loc='upper left')
 		fig.tight_layout(pad=1)
 		fig.subplots_adjust(top=0.95)
 		fig.savefig('X:/Upload/AWP/North_AWP_Graph_Region2.png')
+		plt.close()
 
 	
 	def loadCSVdata (self):
@@ -457,6 +531,33 @@ class AWP_graphs:
 		self.AWP_Accu_mean = Climatedata.B.tolist()
 		self.AWP_centre_Daily_mean = Climatedata.C.tolist()
 		self.AWP_centre_Accu_mean = Climatedata.D.tolist()
+		
+		
+		AWP_daily = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+		Climatedata = pandas.read_csv('X:/Upload/AWP_data/Climatology/Arctic_AWP_pan_Daily.csv', names=AWP_daily,header=0)
+#		Date = Climatedata.A.tolist()
+		self.Icefree_daily = Climatedata.B.tolist()
+		self.C1980s_daily = Climatedata.C.tolist()
+		self.C2000s_daily = Climatedata.D.tolist()
+		self.C2010s_daily = Climatedata.E.tolist()
+		self.C2012_daily = Climatedata.F.tolist()
+		self.C2013_daily = Climatedata.G.tolist()
+		self.C2016_daily = Climatedata.H.tolist()
+		self.C2017_daily = Climatedata.I.tolist()
+		self.C2018_daily = Climatedata.J.tolist()
+		
+		AWP_accu = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+		Climatedata = pandas.read_csv('X:/Upload/AWP_data/Climatology/Arctic_AWP_pan_Accumulated.csv', names=AWP_accu,header=0)
+#		Date = Climatedata.A.tolist()
+		self.Icefree = Climatedata.B.tolist()
+		self.C1980s = Climatedata.C.tolist()
+		self.C2000s = Climatedata.D.tolist()
+		self.C2010s = Climatedata.E.tolist()
+		self.C2012 = Climatedata.F.tolist()
+		self.C2013 = Climatedata.G.tolist()
+		self.C2016 = Climatedata.H.tolist()
+		self.C2017 = Climatedata.I.tolist()
+		self.C2018 = Climatedata.J.tolist()
 	
 	
 	def loadCSVRegiondata (self):
@@ -503,8 +604,11 @@ class AWP_graphs:
 		self.loadCSVdata()
 		self.loadCSVRegiondata()
 
-		self.dailygraph()
-		self.cumugraph()
+		self.daily_graph()
+		self.accu_graph()
+
+		self.daily_anomaly()
+		self.accumu_anomaly()
 		self.centredailygraph()
 		self.centreaccumulatedgraph()
 		self.regiongraph()
@@ -515,5 +619,9 @@ class AWP_graphs:
 action = AWP_graphs()
 if __name__ == "__main__":
 	print('main')
-	action.automated(2019,'04','33') 
+	action.automated(2019,'09','22')
+#	action.loadCSVdata()
+#	action.daily_graph()
+#	action.accu_graph()
+	
 

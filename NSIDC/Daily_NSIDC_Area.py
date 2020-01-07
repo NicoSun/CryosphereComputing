@@ -1,7 +1,5 @@
 import numpy as np
-import numpy.ma as ma
 import pandas
-import csv
 import matplotlib.pyplot as plt
 import os
 
@@ -10,11 +8,11 @@ import os
 class NSIDC_area:
 
 	def __init__  (self):
-		self.year = 2000
+		self.year = 2019
 		self.month = 1
 		self.day = 1
 		
-		self.daycount = 10 #366year, 186summer
+		self.daycount = 366 #366year, 186summer
 		
 		self.CSVDatum = ['Date']
 		self.CSVArea =['Area']
@@ -57,7 +55,7 @@ class NSIDC_area:
 			filename = 'NSIDC_{}{}{}.bin'.format(self.year,self.stringmonth,self.stringday)
 #			filenameMax = 'Max/NSIDC_Max_{}{}.bin'.format(self.stringmonth,self.stringday)
 #			filenameMin = 'Min/NSIDC_Min_{}{}.bin'.format(self.stringmonth,self.stringday)
-			filenamedav = 'Daily_Mean/NSIDC_Mean_{}{}.bin'.format(self.stringmonth,self.stringday)	
+			filenamedav = 'Mean_00_19/NSIDC_Mean_{}{}.bin'.format(self.stringmonth,self.stringday)	
 			
 			
 			try:
@@ -93,6 +91,10 @@ class NSIDC_area:
 				if count == (self.daycount-1):
 					self.normalshow(icemap_new,self.CSVArea[-1])
 					self.anomalyshow(icemapanomaly,area_anom)
+# =============================================================================
+# 					plt.close()
+# 					plt.close()
+# =============================================================================
 			
 			count += 1
 			if count < self.daycount:
@@ -146,7 +148,7 @@ class NSIDC_area:
 
 	def normalshow(self,icemap,icesum):
 		'''displays sea ice data'''
-		icemap = ma.masked_greater(icemap, 1)
+		icemap = np.ma.masked_greater(icemap, 1)
 		icemap = icemap.reshape(448, 304)
 		icemap = icemap[60:410,30:260]
 		icesum = round(icesum,3)
@@ -159,12 +161,14 @@ class NSIDC_area:
 		self.ax.set_title('Date: {}-{}-{}'.format(self.year,self.stringmonth,self.stringday))
 		#self.ax.set_title('Minimum of Minima')
 		self.ax.set_xlabel('Area: '+str(icesum)+' million km2', fontsize=14)
-		self.cax = self.ax.imshow(icemap, interpolation='nearest', vmin=0, vmax=1, cmap=cmap)
+		cax = self.ax.imshow(icemap*100, interpolation='nearest', vmin=0, vmax=100, cmap=cmap)
+		
+		cbar = self.fig.colorbar(cax, ticks=[0,25,50,75,100],shrink=0.85).set_label('Sea Ice concentration in %')
 		
 		self.ax.axes.get_yaxis().set_ticks([])
 		self.ax.axes.get_xaxis().set_ticks([])
 		self.ax.text(2, 8, r'Data: NSIDC NRT', fontsize=10,color='white',fontweight='bold')
-		self.ax.text(2, 18, r'Map: Nico Sun', fontsize=10,color='white',fontweight='bold')
+		self.ax.text(2, 16, r'Map: Nico Sun', fontsize=10,color='white',fontweight='bold')
 		self.ax.text(-0.04, 0.20, 'cryospherecomputing.tk',
         transform=self.ax.transAxes,rotation='vertical',color='grey', fontsize=10)
 		self.fig.tight_layout(pad=1)
@@ -174,7 +178,7 @@ class NSIDC_area:
 	
 	def anomalyshow(self,icemap,icesum):
 		'''creates separate figures for sea ice data'''
-		icemap = ma.masked_greater(icemap, 1)
+		icemap = np.ma.masked_greater(icemap, 1)
 		icemap = icemap.reshape(448, 304)
 		icemap = icemap[60:410,30:260]
 		icesum = round(icesum,3)
@@ -186,12 +190,15 @@ class NSIDC_area:
 		cmap2.set_bad('black',0.6)
 		
 		self.ax2.set_xlabel('Area Anomaly: '+str(icesum)+' million km2', fontsize=14)
-		self.cax = self.ax2.imshow(icemap, interpolation='nearest', vmin=-0.75, vmax=0.75, cmap=cmap2)
+		cax = self.ax2.imshow(icemap*100, interpolation='nearest', vmin=-75, vmax=75, cmap=cmap2)
+		
+		cbar = self.fig2.colorbar(cax, ticks=[-75,-50,-25,0,25,50,75],shrink=0.85).set_label('Sea Ice concentration anomaly in %')
 		
 		self.ax2.axes.get_yaxis().set_ticks([])
 		self.ax2.axes.get_xaxis().set_ticks([])
 		self.ax2.text(2, 8, r'Data: NSIDC NRT', fontsize=10,color='black',fontweight='bold')
-		self.ax2.text(2, 18, r'Map: Nico Sun', fontsize=10,color='black',fontweight='bold')
+		self.ax2.text(2, 16, r'Map: Nico Sun', fontsize=10,color='black',fontweight='bold')
+		self.ax2.text(165, 346,r'Anomaly Base: 2000-2019', fontsize=8,color='black',fontweight='bold')
 		self.ax2.text(-0.04, 0.20, 'cryospherecomputing.tk',
         transform=self.ax2.transAxes,rotation='vertical',color='grey', fontsize=10)
 		self.fig2.tight_layout(pad=1)
@@ -202,31 +209,13 @@ class NSIDC_area:
 		
 	def normalandanomaly(self):
 		'''creates separate figures for sea ice data'''
-		self.icenull = np.zeros(136192, dtype=float)
-		self.icenull = self.icenull.reshape(448, 304)
+		self.fig, self.ax = plt.subplots(figsize=(8, 10))
+		self.fig2, self.ax2 = plt.subplots(figsize=(8, 10))
 		
-		if self.plottype == 'normal' or self.plottype == 'both' :
-			self.fig, self.ax = plt.subplots(figsize=(8, 10))
-			self.cax = self.ax.imshow(self.icenull, interpolation='nearest', vmin=0, vmax=100,cmap = plt.cm.jet)
-			self.cbar = self.fig.colorbar(self.cax, ticks=[0,25,50,75,100]).set_label('Sea Ice concentration in %')
-			#self.title = self.fig.suptitle('Arctic Sea Ice Concentration', fontsize=14, fontweight='bold')
-			
-		if self.plottype == 'anomaly' or self.plottype == 'both':
-			self.fig2, self.ax2 = plt.subplots(figsize=(8, 10))
-			self.cax = self.ax2.imshow(self.icenull, interpolation='nearest', vmin=-75, vmax=75, cmap=plt.cm.coolwarm_r)
-			self.cbar = self.fig2.colorbar(self.cax, ticks=[-75,-50,-25,0,25,50,75]).set_label('Sea Ice concentration anomaly in %')
-			#self.title = self.fig2.suptitle('Arctic Sea Ice Concentration Anomaly', fontsize=14, fontweight='bold')
+	def csvexport(self,filename,filedata):
+		np.savetxt(filename, np.column_stack((filedata)), delimiter=",", fmt='%s')
 
-			
-	def writetofile(self):
-		'''writes data to a csv file'''
-		with open('X:/Upload/AreaData/Arctic_NSIDC_Area_NRT.csv', "w") as output: 
-			writer = csv.writer(output, lineterminator='\n') #str(self.year)
-			for writeing in range(0,len(self.CSVArea)):
-				writer.writerow([self.CSVDatum[writeing],self.CSVArea[writeing],self.CSVExtent[writeing],self.CSVCompaction[writeing]])	
-	
 	def loadCSVdata (self):
-		
 		#NRT Data
 		Yearcolnames = ['Date', 'Area', 'Extent','Compaction']
 		Yeardata = pandas.read_csv('X:/Upload/AreaData/Arctic_NSIDC_Area_NRT.csv', names=Yearcolnames)
@@ -250,17 +239,19 @@ class NSIDC_area:
 		self.daycount = daycount
 		self.loadCSVdata()
 		self.dayloop()
-		self.writetofile()
+		self.csvexport('X:/Upload/AreaData/Arctic_NSIDC_Area_NRT.csv',
+			[self.CSVDatum,self.CSVArea,self.CSVExtent,self.CSVCompaction])
 
 
 action = NSIDC_area()
 if __name__ == "__main__":
 	print('main')
 	#action.loadCSVdata()
-	#action.dayloop()
-	action.automated(1,1,2019,59) #note substract xxx days from last available day
-	#action.makegraph()
-	#action.makegraph_compaction()
+	action.dayloop()
+#	action.automated(31,12,2019,1) #note substract xxx days from last available day
+	
+	action.csvexport('X:/Upload/AreaData/Arctic_NSIDC_Area_NRT.csv',
+			[action.CSVDatum,action.CSVArea,action.CSVExtent,action.CSVCompaction])
 
 '''
 Values are coded as follows:

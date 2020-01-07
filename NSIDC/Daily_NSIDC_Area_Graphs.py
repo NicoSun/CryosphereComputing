@@ -16,7 +16,7 @@ class NSIDC_Graph:
 		fig.suptitle('Arctic Sea Ice Area', fontsize=14, fontweight='bold')
 		ax = fig.add_subplot(111)
 		labels = ['Jan', 'Feb', 'Mar', 'Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan']
-		x = [0,30,59,90,120,151,181,212,243,273,304,334,366] # 1st Jan is day zero
+		x = [0,31,60,91,121,152,182,213,244,274,305,335,366] # 1st Jan is day zero
 		plt.xticks(x,labels)
 
 		ax.set_ylabel('Sea Ice Area in 'r'[$10^6$ $km^2$]')
@@ -55,6 +55,7 @@ class NSIDC_Graph:
 		fig.subplots_adjust(top=0.95)
 		fig.subplots_adjust(bottom=0.08)
 		fig.savefig('X:/Upload/Arctic_Graph.png')
+		plt.close()
 
 			
 	def makegraph_full(self):
@@ -102,6 +103,7 @@ class NSIDC_Graph:
 		fig.subplots_adjust(top=0.95)
 		fig.subplots_adjust(bottom=0.06)
 		fig.savefig('X:/Upload/Arctic_Graph_full.png')
+		plt.close()
 
 			
 	def makegraph_compaction(self):
@@ -136,7 +138,7 @@ class NSIDC_Graph:
 		plt.plot( self.Compaction2013, color='purple',label='2013',lw=1)
 		plt.plot( self.Compaction2016, color='green',label='2016',lw=1)
 		plt.plot( self.Compaction2017, color='brown',label='2017',lw=1)
-		plt.plot( self.Compaction2018, color='brown',label='2018',lw=1)
+		plt.plot( self.Compaction2018, color='red',label='2018',lw=1)
 		plt.plot( self.CSVCompaction, color='black',label=self.year,lw=2)
 		
 		last_value =  round(self.CSVCompaction[-1],2)
@@ -156,6 +158,7 @@ class NSIDC_Graph:
 		fig.subplots_adjust(top=0.95)
 		fig.subplots_adjust(bottom=0.06)
 		fig.savefig('X:/Upload/Arctic_Graph_Compaction.png')
+		plt.close()
 		
 	def Globalgraph(self):
 		'''creates the Global Sea Ice Area Graph'''
@@ -226,6 +229,7 @@ class NSIDC_Graph:
 		fig.subplots_adjust(top=0.95)
 		fig.subplots_adjust(bottom=0.06)
 		fig.savefig('X:/Upload/Global_Graph_full.png')
+		plt.close()
 #		plt.show()
 
 	def loadCSVdata (self):
@@ -291,7 +295,7 @@ class NSIDC_Graph:
 action = NSIDC_Graph()
 if __name__ == "__main__":
 	print('main')
-#	action.automated(3,1,2019)
-	action.loadCSVdata()
-	action.Globalgraph()
+	action.automated(31,5,2019)
+#	action.loadCSVdata()
+#	action.Globalgraph()
 	#action.makegraph_compaction()
